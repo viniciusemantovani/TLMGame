@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
+#include "hardware/pwm.h"
+
+const uint LED_VERMELHO = 13;
+const uint LED_VERDE = 11;
+const uint16_t PERIOD = 2000;
+const float DIVIDER_PWM = 16.0;
+
+void setup_pwm(){
+    uint slice;
+    gpio_set_function(LED_VERMELHO, GPIO_FUNC_PWM);
+    slice = pwm_gpio_to_slice_num(LED_VERMELHO);
+    pwm_set_clkdiv(slice, DIVIDER_PWM);
+    pwm_set_wrap(slice, PERIOD);
+    pwm_set_gpio_level(LED_VERMELHO, 1000);
+    pwm_set_enabled(slice, false);
+
+    gpio_set_function(LED_VERDE, GPIO_FUNC_PWM);
+    slice = pwm_gpio_to_slice_num(LED_VERDE);
+    pwm_set_clkdiv(slice, DIVIDER_PWM);
+    pwm_set_wrap(slice, PERIOD);
+    pwm_set_gpio_level(LED_VERDE, 1000);
+    pwm_set_enabled(slice, false);
+}
+
+int main()
+{
+    stdio_init_all();
+    setup_pwm();
+
+    // Initialise the Wi-Fi chip
+    if (cyw43_arch_init()) {
+        printf("Wi-Fi init failed\n");
+        return -1;
+    }
+
+    // Enable wifi station
+    cyw43_arch_enable_sta_mode();
+
+    printf("Connecting to Wi-Fi...\n");
+    if (cyw43_arch_wifi_connect_timeout_ms("adalgisa", "DalIDOSA4432", CYW43_AUTH_WPA2_AES_PSK, 30000)) {
+        uint slice = pwm_gpio_to_slice_num(LED_VERMELHO);
+        pwm_set_enabled(slice, true);
+        printf("failed to connect.\n");
+        return 1;
+    } else {
+        printf("Connected.\n");
+        // Read the ip address in a human readable way
+        uint8_t *ip_address = (uint8_t*)&(cyw43_state.netif[0].ip_addr.addr);
+        uint slice = pwm_gpio_to_slice_num(LED_VERDE);
+        pwm_set_enabled(slice, true);
+        printf("IP address %d.%d.%d.%d\n", ip_address[0], ip_address[1], ip_address[2], ip_address[3]);
+    }
+
+    while (true) {
+        printf("Hello, world!\n");
+        sleep_ms(1000);
+    }
+}
