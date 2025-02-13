@@ -235,96 +235,169 @@ void criaVerify(uint8_t color8, uint8_t color9, uint8_t color0, uint8_t color1){
 uint8_t geraCorRandom(){
     uint32_t random = get_rand_32();
     int32_t aux = abs(random);
-    return aux%4;
+    uint8_t ret = aux%4;
+    return ret;
 }
 
 /**
- * @brief Desenha o mapa de uma nova fase (aleatóriamente, seguindo parâmetros lógicos)
+ * @brief Determina e desenha o mapa de uma nova fase (aleatoriamente, seguindo parâmetros lógicos)
  */
-void drawMap(){
+void determinaMap(){
 
-    // Determina cores dos quatro leds do primeiro quadro aleatóriamente:
-    uint8_t led_up_left = geraCorRandom();
-    uint8_t led_up_right = geraCorRandom();
-    uint8_t led_bottom_right = geraCorRandom();
-    uint8_t led_bottom_left = geraCorRandom();
+    uint8_t led_up_left1;
+    uint8_t led_up_right1;
+    uint8_t led_bottom_right1;
+    uint8_t led_bottom_left1;
+    
+    // Definição dos armazenadores de cores dos leds do terceiro quadro;
+    uint8_t led_up_left3;
+    uint8_t led_up_right3;
+    uint8_t led_bottom_right3;
+    uint8_t led_bottom_left3;
 
-    // Primeiro conjunto:
-    acendeConjunto(24,23,16,15,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
-
-    // Determina o segundo quadro aleatoriamente mas com lógica baseada no primeiro quadro:
-
+    // Determina aleatoriamente a lógica baseada no primeiro quadro para criar o segundo:
     uint32_t random = get_rand_32();
     uint32_t aux = abs(random);
-    uint8_t alt2 = aux%3; // fator aleatório para movimentação do primeiro para o segundo quadro.
+    uint8_t alt2 = aux%4; // fator aleatório para geração do segundo quadro com base no primeiro. (0 - 90 graus no horario, 1 - no antihorario, 2 - 180, 3 - mudança de cores).
     
+    // Determina cores dos quatro leds do primeiro quadro aleatoriamente:
+
+    if(alt2 <= 1){ // Caso seja rotação de 90 graus.
+        do{ // Impede que sejam todos iguais no caso de rotacionar, pois nesse caso não é possível concluir nada.
+            led_up_left1 = geraCorRandom();
+            led_up_right1 = geraCorRandom();
+            led_bottom_right1 = geraCorRandom();
+            led_bottom_left1 = geraCorRandom();
+        } while(led_bottom_left1 == led_up_right1 && led_up_left1 == led_bottom_right1);
+    }
+    else if(alt2 <= 2){
+        do{ // Impede que sejam todos iguais no caso de rotacionar, pois nesse caso não é possível concluir nada.
+            led_up_left1 = geraCorRandom();
+            led_up_right1 = geraCorRandom();
+            led_bottom_right1 = geraCorRandom();
+            led_bottom_left1 = geraCorRandom();
+        } while(led_up_left1 == led_up_right1 && led_up_left1 == led_bottom_left1 && led_up_left1 == led_bottom_right1);
+    } else{
+        led_up_left1 = geraCorRandom();
+        led_up_right1 = geraCorRandom();
+        led_bottom_right1 = geraCorRandom();
+        led_bottom_left1 = geraCorRandom();
+    }
+
+    // Acende leds do primeiro quadro:
+    acendeConjunto(24,23,16,15,led_up_left1,led_up_right1,led_bottom_right1,led_bottom_left1);
+
+    // Terceiro quadro:
+
+    // Verifica se não haverá mudança de cores:
+    if(alt2 != 3){
+        // Determina cores dos quatro leds do terceiro quadro aleatoriamente:
+        led_up_left3 = geraCorRandom();
+        led_up_right3 = geraCorRandom();
+        led_bottom_right3 = geraCorRandom();
+        led_bottom_left3 = geraCorRandom();
+    } else{
+        uint8_t color = -1; // Armazena uma cor possível para um led do terceiro quadro.
+        uint8_t leds_trd[4];
+        for(uint8_t i = 0; i < 4; i++){ // para cada led do terceiro quadro:
+            do{
+                random = get_rand_32();
+                aux = abs(random);
+                color = aux%4;
+                leds_trd[i] = color;
+            } while(color != led_up_left1 && color != led_up_right1 && color != led_bottom_right1 && color != led_bottom_left1);
+            // ^ os leds do terceiro quadro só podem ter cores que estiverem em algum dos leds do primeiro!
+        }
+
+        // Determina cores dos quatro leds do terceiro quadro aleatoriamente:
+        led_up_left3 = leds_trd[0];
+        led_up_right3 = leds_trd[1];
+        led_bottom_right3 = leds_trd[2];
+        led_bottom_left3 = leds_trd[3];
+    }
+
+    // Acende leds do terceiro quadro:
+    acendeConjunto(5,6,3,4,led_up_left3,led_up_right3,led_bottom_right3,led_bottom_left3);
+
     switch(alt2){
 
         // Rotação sentido horário 90 graus:
         case 0:
-                acendeConjunto(20,19,18,21,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+
+                printf("entrou no 0\n");
+
+                acendeConjunto(20,19,18,21,led_up_left1,led_up_right1,led_bottom_right1,led_bottom_left1);
+                criaVerify(led_bottom_left3, led_up_left3, led_up_right3, led_bottom_right3);
                 break;
 
         // Rotação sentido antihorário 90 graus:
         case 1:
-                acendeConjunto(18,21,20,19,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+                printf("entrou no 1\n");
+
+                acendeConjunto(18,21,20,19,led_up_left1,led_up_right1,led_bottom_right1,led_bottom_left1);
+                criaVerify(led_up_right3, led_bottom_right3, led_bottom_left3, led_up_left3);
                 break;
 
-        // Rotação sentido 180 graus:
+        // Rotação 180 graus:
         case 2:
-                acendeConjunto(19,18,21,20,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+                printf("entrou no 2\n");
+                acendeConjunto(19,18,21,20,led_up_left1,led_up_right1,led_bottom_right1,led_bottom_left1);
+                criaVerify(led_bottom_right3, led_bottom_left3, led_up_left3, led_up_right3);
                 break;
-    }
+        
+        // Troca cores:
+        case 3:
+                // Determina novas cores:
+                printf("entrou no 3\n");
+                uint8_t veri_8, veri_9, veri_0, veri_1;
 
-    // Determina o terceiro quadro aleatoriamente mas com lógica baseada nos primeiros dois quadros:
+                uint8_t new_col[4]; // Armazena cores corretas para conversão (cor índice -> cor elemento, de 0 a 3)
+                new_col[0] = geraCorRandom();
+                new_col[1] = geraCorRandom();
+                new_col[2] = geraCorRandom();
+                new_col[3] = geraCorRandom();
+                printf("out funct 0 %d\n", new_col[0]);
+                printf("out funct 1 %d\n", new_col[1]);
+                printf("out funct 2 %d\n", new_col[2]);
+                printf("out funct 3 %d\n", new_col[3]);
 
-    random = get_rand_32();
-    aux = abs(random);
-    uint8_t alt3 = aux%2;
+                //Determina cada cor correta por posição:
+                for(uint8_t i = 0; i < 4; i++){
+                    if(led_up_left1 == i){
+                        acendeLed(21, new_col[i]);
+                        printf("acende 21 = %d\n", new_col[i]);
+                    }
+                    if(led_up_right1 == i){
+                        printf("acende 20 = %d\n", new_col[i]);
+                        acendeLed(20, new_col[i]);
+                    }
+                    if(led_bottom_right1 == i){
+                        printf("acende 19 = %d\n", new_col[i]);
+                        acendeLed(19, new_col[i]);
+                    }                
+                    if(led_bottom_left1 == i){
+                        printf("acende 18 = %d\n", new_col[i]);
+                        acendeLed(18, new_col[i]);
+                    }
+                    if(led_up_left3 == i){
+                        veri_8 = new_col[i];
+                        printf("veri 8 = %d\n", new_col[i]);
+                    }
+                    if(led_up_right3 == i){
+                        veri_9 = new_col[i];
+                        printf("veri 9 = %d\n", new_col[i]);
+                    }
+                    if(led_bottom_right3 == i){
+                        printf("veri 0 = %d\n", new_col[i]);
+                        veri_0 = new_col[i];
+                    }
+                    if(led_bottom_left3 == i){
+                        printf("veri 1 = %d\n", new_col[i]);
+                        veri_1 = new_col[i];
+                    }
+                }
 
-    // Caso tenha virado 90 no horário o segundo quadro:
-    if(alt2 == 0){
-
-        // Vira mais 90 no horário
-        if(alt3 == 0){
-            acendeConjunto(3,4,5,6,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
-            criaVerify(led_up_right,led_bottom_right,led_bottom_left,led_up_left);
-
-        // Vira de volta 90 no antihorário
-        } else{
-            acendeConjunto(5,6,3,4,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
-            criaVerify(led_bottom_left,led_up_left,led_up_right,led_bottom_right);
-        }
-    }
-
-    // Caso tenha virado 90 no antihorário o segundo quadro:
-    else if(alt2 == 1){
-
-        // Vira de volta 90 no horário
-        if(alt3 == 0){
-            acendeConjunto(5,6,3,4,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
-            criaVerify(led_up_right,led_bottom_right,led_bottom_left,led_up_left);
-
-        // Vira mais 90 no antihorário
-        } else{
-            acendeConjunto(3,4,5,6,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
-            criaVerify(led_bottom_left,led_up_left,led_up_right,led_bottom_right);
-        }
-    }
-
-    // Caso tenha virado 180 o segundo quadro:
-    else if(alt2 == 2){
-
-        // Vira mais 90 no horário
-        if(alt3 == 0){
-            acendeConjunto(4,5,6,3,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
-            criaVerify(led_up_right, led_bottom_right, led_bottom_left, led_up_left);
-
-        // Vira mais 90 no antihorário
-        } else{
-            acendeConjunto(6,3,4,5,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
-            criaVerify(led_bottom_left,led_up_left,led_up_right,led_bottom_right);
-        }
+                criaVerify(veri_8, veri_9, veri_0, veri_1);
     }
 }
 
@@ -353,14 +426,14 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
 
     //-------------------------------------------------------------------------
 
-    drawMap();
+    determinaMap();
 
     // Reseta parte manipulável do mapa:
     acendeLed(0, 0);
     acendeLed(1, 0);
     acendeLed(8, 0);
     acendeLed(9, 0);
-    acendeLed(posicao_atual, 1);
+    acendeLed(posicao_atual, cor_atual);
 
     cor_led_0 = 0;
     cor_led_1 = 0;
