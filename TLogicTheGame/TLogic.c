@@ -35,7 +35,6 @@ uint8_t cor_led_1 = 0;
 uint8_t cor_led_8 = 0;
 uint8_t cor_led_9 = 0;
 
-
 // Cores corretas para os leds mutáveis
 uint8_t cor_led_0_verify = 0;
 uint8_t cor_led_1_verify = 0;
@@ -62,25 +61,6 @@ void writeString(char **text, uint8_t *ssd, struct render_area frame_area){
         y += 8;
     }
     render_on_display(ssd, &frame_area);
-}
-
-/**
- * @brief Gera o mapa inicial do jogo que permanece até o fim.
- */
-void startMap(){
-
-    // Linha vertical
-    npSetLED(2, 200, 0, 0);
-    npSetLED(7, 200, 0, 0);
-    npSetLED(12, 200, 0, 0);
-    npSetLED(17, 200, 0, 0);
-    npSetLED(22, 200, 0, 0);
-
-    // Linha horizontal
-    npSetLED(10, 200, 0, 0);
-    npSetLED(11, 200, 0, 0);
-    npSetLED(13, 200, 0, 0);
-    npSetLED(14, 200, 0, 0);
 }
 
 /** 
@@ -217,100 +197,104 @@ bool btnBRepeat(struct repeating_timer *t){
 }
 
 /**
+ * @brief Função auxiliar da função drawMap, acende um conjunto de leds com cores determinadas.
+ * @param fst primeiro led
+ * @param scd segundo led
+ * @param trd terceiro led
+ * @param fth quarto led
+ * @param led_up_left cor do led de cima à esquerda no primeiro quadro
+ * @param led_up_right cor do led de cima à direita no primeiro quadro
+ * @param led_bottom_right cor do led de baixo à direita no primeiro quadro
+ * @param led_bottom_left cor do led de baixo à esquerda no primeiro quadro
+ */
+void acendeConjunto(uint8_t fst, uint8_t scd, uint8_t trd, uint8_t fth, uint8_t led_up_left, uint8_t led_up_right, uint8_t led_bottom_right, uint8_t led_bottom_left){
+    acendeLed(fst, led_up_left);
+    acendeLed(scd, led_up_right);
+    acendeLed(trd, led_bottom_right);
+    acendeLed(fth, led_bottom_left);
+}
+
+/**
+ * @brief Gera os valores das cores corretas para vitória do usuário.
+ * @param color8 cor correta para led 8
+ * @param color9 cor correta para led 9
+ * @param color0 cor correta para led 0
+ * @param color1 cor correta para led 1
+ */
+void criaVerify(uint8_t color8, uint8_t color9, uint8_t color0, uint8_t color1){
+
+    cor_led_8_verify = color8;
+    cor_led_9_verify = color9;
+    cor_led_0_verify = color0;
+    cor_led_1_verify = color1;
+}
+
+/**
+ * @brief Gera uma cor aleatória (0 a 3, 0 - apagado, 1 - azul, 2 - verde, 3 - vermelho).
+ */
+uint8_t geraCorRandom(){
+    uint32_t random = get_rand_32();
+    int32_t aux = abs(random);
+    return aux%4;
+}
+
+/**
  * @brief Desenha o mapa de uma nova fase (aleatóriamente, seguindo parâmetros lógicos)
  */
 void drawMap(){
 
     // Determina cores dos quatro leds do primeiro quadro aleatóriamente:
-    uint32_t random = get_rand_32();
-    int32_t up_left = abs(random);
-    uint8_t led_up_left = up_left%4;
-
-    random = get_rand_32();
-    int32_t up_right = abs(random);
-    uint8_t led_up_right = up_right%4;
-
-    random = get_rand_32();
-    int32_t bottom_right = abs(random);
-    uint8_t led_bottom_right = bottom_right%4;
-
-    random = get_rand_32();
-    int32_t bottom_left = abs(random);
-    uint8_t led_bottom_left = bottom_left%4;
+    uint8_t led_up_left = geraCorRandom();
+    uint8_t led_up_right = geraCorRandom();
+    uint8_t led_bottom_right = geraCorRandom();
+    uint8_t led_bottom_left = geraCorRandom();
 
     // Primeiro conjunto:
-    acendeLed(24, led_up_left);
-    acendeLed(23, led_up_right);
-    acendeLed(16, led_bottom_right);
-    acendeLed(15, led_bottom_left);
+    acendeConjunto(24,23,16,15,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
 
     // Determina o segundo quadro aleatoriamente mas com lógica baseada no primeiro quadro:
 
-    random = get_rand_32();
-    int32_t alteracao = abs(random);
-    uint8_t alt2 = alteracao%3;
+    uint32_t random = get_rand_32();
+    uint32_t aux = abs(random);
+    uint8_t alt2 = aux%3; // fator aleatório para movimentação do primeiro para o segundo quadro.
     
     switch(alt2){
 
         // Rotação sentido horário 90 graus:
         case 0:
-                acendeLed(20, led_up_left);
-                acendeLed(19, led_up_right);
-                acendeLed(18, led_bottom_right);
-                acendeLed(21, led_bottom_left);
+                acendeConjunto(20,19,18,21,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
                 break;
 
         // Rotação sentido antihorário 90 graus:
         case 1:
-                acendeLed(18, led_up_left);
-                acendeLed(21, led_up_right);
-                acendeLed(20, led_bottom_right);
-                acendeLed(19, led_bottom_left);
+                acendeConjunto(18,21,20,19,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
                 break;
 
         // Rotação sentido 180 graus:
         case 2:
-                acendeLed(19, led_up_left);
-                acendeLed(18, led_up_right);
-                acendeLed(21, led_bottom_right);
-                acendeLed(20, led_bottom_left);
+                acendeConjunto(19,18,21,20,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
                 break;
     }
 
     // Determina o terceiro quadro aleatoriamente mas com lógica baseada nos primeiros dois quadros:
 
     random = get_rand_32();
-    alteracao = abs(random);
-    uint8_t alt3 = alteracao%2;
+    aux = abs(random);
+    uint8_t alt3 = aux%2;
 
     // Caso tenha virado 90 no horário o segundo quadro:
     if(alt2 == 0){
 
         // Vira mais 90 no horário
         if(alt3 == 0){
-            acendeLed(3, led_up_left);
-            acendeLed(4, led_up_right);
-            acendeLed(5, led_bottom_right);
-            acendeLed(6, led_bottom_left);
-
-            cor_led_8_verify = led_up_right;
-            cor_led_9_verify = led_bottom_right;
-            cor_led_0_verify = led_bottom_left;
-            cor_led_1_verify = led_up_left;
+            acendeConjunto(3,4,5,6,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+            criaVerify(led_up_right,led_bottom_right,led_bottom_left,led_up_left);
 
         // Vira de volta 90 no antihorário
         } else{
-            acendeLed(5, led_up_left);
-            acendeLed(6, led_up_right);
-            acendeLed(3, led_bottom_right);
-            acendeLed(4, led_bottom_left);
-
-            cor_led_8_verify = led_bottom_left;
-            cor_led_9_verify = led_up_left;
-            cor_led_0_verify = led_up_right;
-            cor_led_1_verify = led_bottom_right;
+            acendeConjunto(5,6,3,4,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+            criaVerify(led_bottom_left,led_up_left,led_up_right,led_bottom_right);
         }
-        
     }
 
     // Caso tenha virado 90 no antihorário o segundo quadro:
@@ -318,29 +302,14 @@ void drawMap(){
 
         // Vira de volta 90 no horário
         if(alt3 == 0){
-            acendeLed(5, led_up_left);
-            acendeLed(6, led_up_right);
-            acendeLed(3, led_bottom_right);
-            acendeLed(4, led_bottom_left);
-
-            cor_led_8_verify = led_up_right;
-            cor_led_9_verify = led_bottom_right;
-            cor_led_0_verify = led_bottom_left;
-            cor_led_1_verify = led_up_left;
+            acendeConjunto(5,6,3,4,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+            criaVerify(led_up_right,led_bottom_right,led_bottom_left,led_up_left);
 
         // Vira mais 90 no antihorário
         } else{
-            acendeLed(3, led_up_left);
-            acendeLed(4, led_up_right);
-            acendeLed(5, led_bottom_right);
-            acendeLed(6, led_bottom_left);
-
-            cor_led_8_verify = led_bottom_left;
-            cor_led_9_verify = led_up_left;
-            cor_led_0_verify = led_up_right;
-            cor_led_1_verify = led_bottom_right;
+            acendeConjunto(3,4,5,6,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+            criaVerify(led_bottom_left,led_up_left,led_up_right,led_bottom_right);
         }
-        
     }
 
     // Caso tenha virado 180 o segundo quadro:
@@ -348,29 +317,14 @@ void drawMap(){
 
         // Vira mais 90 no horário
         if(alt3 == 0){
-            acendeLed(4, led_up_left);
-            acendeLed(5, led_up_right);
-            acendeLed(6, led_bottom_right);
-            acendeLed(3, led_bottom_left);
-
-            cor_led_8_verify = led_up_right;
-            cor_led_9_verify = led_bottom_right;
-            cor_led_0_verify = led_bottom_left;
-            cor_led_1_verify = led_up_left;
+            acendeConjunto(4,5,6,3,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+            criaVerify(led_up_right, led_bottom_right, led_bottom_left, led_up_left);
 
         // Vira mais 90 no antihorário
         } else{
-            acendeLed(6, led_up_left);
-            acendeLed(3, led_up_right);
-            acendeLed(4, led_bottom_right);
-            acendeLed(5, led_bottom_left);
-
-            cor_led_8_verify = led_bottom_left;
-            cor_led_9_verify = led_up_left;
-            cor_led_0_verify = led_up_right;
-            cor_led_1_verify = led_bottom_right;
+            acendeConjunto(6,3,4,5,led_up_left,led_up_right,led_bottom_right,led_bottom_left);
+            criaVerify(led_bottom_left,led_up_left,led_up_right,led_bottom_right);
         }
-        
     }
 }
 
@@ -400,6 +354,179 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
     //-------------------------------------------------------------------------
 
     drawMap();
+
+    // Reseta parte manipulável do mapa:
+    acendeLed(0, 0);
+    acendeLed(1, 0);
+    acendeLed(8, 0);
+    acendeLed(9, 0);
+    acendeLed(posicao_atual, 1);
+
+    cor_led_0 = 0;
+    cor_led_1 = 0;
+    cor_led_8 = 0;
+    cor_led_9 = 0;
+}
+
+/**
+ * @brief Printa mensagens do início do jogo.
+ * @param ssd dados do display
+ * @param frame_area area do display
+ */
+void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
+
+    // Mensagem de welcoming:
+    char *welcome[] = {
+        " Bem vindo ao   ",
+        "                ",
+        "    TLogic!     "};
+
+    writeString(welcome, ssd, frame_area); // Escreve a mensagem de welcoming no display
+
+    // Som de welcoming:
+    play_tone(BUZZER_PIN_A, 300, 200);
+    sleep_ms(100);
+    play_tone(BUZZER_PIN_A, 300, 200);
+    sleep_ms(1000);
+
+    // Mensagem introdutória:
+    char *begin[] = {
+        "  Pressione A   ",
+        "para prosseguir ",
+        "  a cada etapa  ",
+        "                "};
+
+    writeString(begin, ssd, frame_area); // Escreve a mensagem introdutória no display
+
+    // Aguarda pressionamento do botão A.
+    while(gpio_get(BUTTON_A));
+    sleep_ms(500);
+    play_tone(BUZZER_PIN_A, 300, 200);
+
+
+        // Mensagem tutorial 1:
+    char *tut1[] = {
+        " O jogador deve ",
+        "    repetir     ",
+        "  a logica dos  ",
+        "                "};
+
+    writeString(tut1, ssd, frame_area); // Escreve a mensagem no display
+
+    // Aguarda pressionamento do botão A.
+    while(gpio_get(BUTTON_A));
+    sleep_ms(500);
+    play_tone(BUZZER_PIN_A, 300, 200);
+
+    // Mensagem tutorial 2:
+    char *tut2[] = {
+        " quadros decima ",
+        "  nos quadros   ",
+        "    debaixo     ",
+        "                "};
+
+    writeString(tut2, ssd, frame_area); // Escreve a mensagem no display
+
+    // Aguarda pressionamento do botão A.
+    while(gpio_get(BUTTON_A));
+    sleep_ms(500);
+    play_tone(BUZZER_PIN_A, 300, 200);
+
+    // Mensagem tutorial 2:
+    char *tut3[] = {
+        "  A troca cor   ",
+        "  B define cor  ",
+        "  JS confirma   ",
+        "                "};
+
+    writeString(tut3, ssd, frame_area); // Escreve a mensagem introdutória no display
+
+    // Aguarda pressionamento do botão A para começar jogo.
+    while(gpio_get(BUTTON_A));
+    sleep_ms(500);
+}
+
+/**
+ * @brief Desenha um x na matriz de led (usado na derrota).
+ */
+void desenhaX(){
+
+    // Seta leds pertencentes ao X:
+    npSetLED(0, 200, 0, 0);
+    npSetLED(6, 200, 0, 0);
+    npSetLED(8, 200, 0, 0);
+    npSetLED(12, 200, 0, 0);
+    npSetLED(16, 200, 0, 0);
+    npSetLED(24, 200, 0, 0);
+    npSetLED(4, 200, 0, 0);
+    npSetLED(18, 200, 0, 0);
+    npSetLED(20, 200, 0, 0);
+
+    // Apaga demais leds:
+    for(uint8_t i = 0; i < 25; i++){
+        if(i != 0 && i != 6 && i != 8 && i != 12 && i != 16 && i != 24 && i != 4 && i != 18 && i != 20)
+        npSetLED(i, 0, 0, 0);
+    }
+}
+
+/**
+ * @brief Reinicia o jogo desde as mensagens iniciais.
+ * @param fase_atual fase do jogo. É resetada nesta função
+ * @param ssd dados do display
+ * @param frame_area area do display
+ */
+void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area frame_area){
+    
+    //Desenha X indicando derrota:
+    desenhaX();
+    npWrite();
+
+    // Escreve mensagem de derrota no display:
+    char *derrota[] = {
+        "RESPOSTA ERRADA ",
+        "                ",
+        "TENTE NOVAMENTE ",
+        "                "};
+
+    writeString(derrota, ssd, frame_area);
+    
+    // Toca som de derrota:
+    play_tone(BUZZER_PIN_B, 420, 100);
+    play_tone(BUZZER_PIN_B, 410, 100);
+    play_tone(BUZZER_PIN_B, 400, 100);
+    play_tone(BUZZER_PIN_B, 390, 400);
+
+    sleep_ms(500);
+
+    // Reseta o mapa:
+    for(uint8_t i = 0; i < 25; i++){
+        npSetLED(i, 0, 0, 0);
+    }
+    npWrite();
+
+    mensagensInicio(ssd, frame_area);
+    *fase_atual = 0;
+    new_fase = true;
+    vitoria = true;
+
+}
+
+void apresentaVitoria(uint8_t *ssd, struct render_area frame_area){
+    // Escreve mensagem de vitoria no display:
+    char *derrota[] = {
+        "   MUITO BEM    ",
+        "    CORRETO     ",
+        " CONTINUE ASSIM ",
+        "                "};
+
+    writeString(derrota, ssd, frame_area);
+
+    // Toca som de vitória:
+    play_tone(BUZZER_PIN_B, 400, 100);
+    play_tone(BUZZER_PIN_B, 420, 100);
+    play_tone(BUZZER_PIN_B, 450, 400);
+
+    sleep_ms(500);
 }
 
 int main(){
@@ -452,49 +579,7 @@ int main(){
     uint8_t ssd[ssd1306_buffer_length];
     clearDisplay(ssd, frame_area);
 
-    //-------------------------------------------------------------------------
-
-        // Pré-jogo:
-
-    // Mensagem de welcoming:
-    char *welcome[] = {
-        " Bem-vindo ao   ",
-        "                ",
-        "    TLogic!     "};
-
-    writeString(welcome, ssd, frame_area); // Escreve a mensagem de welcoming no display
-
-    // Som de welcoming:
-    play_tone(BUZZER_PIN_A, 300, 200);
-    sleep_ms(100);
-    play_tone(BUZZER_PIN_A, 300, 200);
-    sleep_ms(3000);
-
-    // Mensagem introdutória:
-    char *begin[] = {
-        "  Pressione A   ",
-        "para prosseguir ",
-        "  a cada etapa  ",
-        "                "};
-
-    writeString(begin, ssd, frame_area); // Escreve a mensagem introdutória no display
-
-    // Aguarda pressionamento do botão A para começar tutorial.
-    while(gpio_get(BUTTON_A));
-    sleep_ms(500);
-
-    // Mensagem tutorial:
-    char *tut[] = {
-        "  A troca cor   ",
-        "  B define cor  ",
-        "  JS confirma   ",
-        "                "};
-
-    writeString(tut, ssd, frame_area); // Escreve a mensagem introdutória no display
-
-    // Aguarda pressionamento do botão A para começar jogo.
-    while(gpio_get(BUTTON_A));
-    sleep_ms(500);
+    mensagensInicio(ssd, frame_area); // Printa no display as mensagens de início.
 
     //-------------------------------------------------------------------------
 
@@ -505,10 +590,6 @@ int main(){
     sleep_ms(100);
     play_tone(BUZZER_PIN_B, 450, 200);
     sleep_ms(1000);
-
-    // Confiura mapa inicial:
-    // startMap(); // Seta os Leds componentes do mapa inicial do jogo.
-    // npWrite(); // Escreve os dados nos LEDs (nave na posicao inicial).
 
     // Acende cursor em azul:
     npSetLED(posicao_atual, 0, 0, 200);
@@ -530,16 +611,12 @@ int main(){
             sleep_ms(100);
             if(vitoria){
                 fase_atual++;
+                if(fase_atual > 1) apresentaVitoria(ssd, frame_area);
                 inicioFase(fase_atual, ssd, frame_area); // Inicia nova fase.
                 vitoria = false;
                 new_fase = false;
-                printf("right\n");
             } else{
-                fase_atual = 0;
-                new_fase = true;
-                vitoria = true;
-                printf("wrong\n");
-                //função de reinício...
+                restartFromScratch(&fase_atual, ssd, frame_area);
             }
         }
         
@@ -549,3 +626,4 @@ int main(){
         sleep_us(100000);
     }
 }
+
