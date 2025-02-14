@@ -480,9 +480,9 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
 
     // Mensagem tutorial 2:
     char *tut2[] = {
-        " quadros decima ",
+        "quadros de cima ",
         "  nos quadros   ",
-        "    debaixo     ",
+        "   de baixo     ",
         "                "};
 
     writeString(tut2, ssd, frame_area); // Escreve a mensagem no display
@@ -495,11 +495,25 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     // Mensagem tutorial 2:
     char *tut3[] = {
         "  A troca cor   ",
+        "                ",
         "  B define cor  ",
-        "  JS confirma   ",
         "                "};
 
     writeString(tut3, ssd, frame_area); // Escreve a mensagem introdutória no display
+
+    // Aguarda pressionamento do botão A.
+    while(gpio_get(BUTTON_A));
+    sleep_ms(500);
+    play_tone(BUZZER_PIN_A, 300, 200);
+
+     // Mensagem tutorial 3:
+    char *tut4[] = {
+        "JS move cursor  ",
+        "e pressionado   ",
+        "confirma cores  ",
+        "                "};
+
+    writeString(tut4, ssd, frame_area); // Escreve a mensagem introdutória no display
 
     // Aguarda pressionamento do botão A para começar jogo.
     while(gpio_get(BUTTON_A));
