@@ -58,6 +58,13 @@
         "timer.h": "c",
         "buzzer_pwm1.h": "c",
         "rand.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "array": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "string_view": "c",
+        "initializer_list": "c"
     }
 }

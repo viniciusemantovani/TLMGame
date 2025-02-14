@@ -63,6 +63,19 @@ void writeString(char **text, uint8_t *ssd, struct render_area frame_area){
     render_on_display(ssd, &frame_area);
 }
 
+/**
+ * @brief Organiza um conjunto de strings e envia para serem escritas no display.
+ * @param str1 primeira linha
+ * @param str2 segunda linha
+ * @param str3 terceira linha
+ * @param ssd buffer do display
+ * @param frame_area area do quadro
+*/ 
+void organizeStrings(char *str1, char *str2, char *str3, uint8_t *ssd, struct render_area frame_area){
+    char *msg[] = {str1, str2, str3, "                "};
+    writeString(msg, ssd, frame_area); // Escreve a mensagem no display
+}
+
 /** 
  * @brief Acende um led de acordo com valor da cor.
  * @param posicao indica a posição do led a ser acendido
@@ -405,13 +418,7 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
     sprintf(fase_str, "       %.2d        ", fase_atual);
 
     // Mensagem de jogo:
-    char *jogando[] = {
-        "   fase atual   ",
-        "                ",
-             fase_str,
-        "                "};
-
-    writeString(jogando, ssd, frame_area); // Escreve a mensagem no display
+    organizeStrings("   fase atual   ", "                ", fase_str, ssd, frame_area);
 
     //-------------------------------------------------------------------------
 
@@ -450,28 +457,15 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     sleep_ms(1000);
 
     // Mensagem introdutória:
-    char *begin[] = {
-        "  Pressione A   ",
-        "para prosseguir ",
-        "  a cada etapa  ",
-        "                "};
-
-    writeString(begin, ssd, frame_area); // Escreve a mensagem introdutória no display
+    organizeStrings("  Pressione A   ", "para prosseguir ", "  a cada etapa  ", ssd, frame_area);
 
     // Aguarda pressionamento do botão A.
     while(gpio_get(BUTTON_A));
     sleep_ms(500);
     play_tone(BUZZER_PIN_A, 300, 200);
 
-
-        // Mensagem tutorial 1:
-    char *tut1[] = {
-        " O jogador deve ",
-        "    repetir     ",
-        "  a logica dos  ",
-        "                "};
-
-    writeString(tut1, ssd, frame_area); // Escreve a mensagem no display
+    // Mensagem tutorial 1:
+    organizeStrings(" O jogador deve ", "    repetir     ", "  a logica dos  ", ssd, frame_area);
 
     // Aguarda pressionamento do botão A.
     while(gpio_get(BUTTON_A));
@@ -479,13 +473,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     play_tone(BUZZER_PIN_A, 300, 200);
 
     // Mensagem tutorial 2:
-    char *tut2[] = {
-        "quadros de cima ",
-        "  nos quadros   ",
-        "   de baixo     ",
-        "                "};
-
-    writeString(tut2, ssd, frame_area); // Escreve a mensagem no display
+    organizeStrings("quadros de cima ", "  nos quadros   ", "   de baixo     ", ssd, frame_area);
 
     // Aguarda pressionamento do botão A.
     while(gpio_get(BUTTON_A));
@@ -493,13 +481,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     play_tone(BUZZER_PIN_A, 300, 200);
 
     // Mensagem tutorial 2:
-    char *tut3[] = {
-        "  A troca cor   ",
-        "                ",
-        "  B define cor  ",
-        "                "};
-
-    writeString(tut3, ssd, frame_area); // Escreve a mensagem introdutória no display
+    organizeStrings("  A troca cor   ", "                ", "  B define cor  ", ssd, frame_area);
 
     // Aguarda pressionamento do botão A.
     while(gpio_get(BUTTON_A));
@@ -507,13 +489,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     play_tone(BUZZER_PIN_A, 300, 200);
 
      // Mensagem tutorial 3:
-    char *tut4[] = {
-        "JS move cursor  ",
-        "e pressionado   ",
-        "confirma cores  ",
-        "                "};
-
-    writeString(tut4, ssd, frame_area); // Escreve a mensagem introdutória no display
+     organizeStrings("JS move cursor  ", "e pressionado   ", "confirma cores  ", ssd, frame_area);
 
     // Aguarda pressionamento do botão A para começar jogo.
     while(gpio_get(BUTTON_A));
@@ -550,13 +526,7 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
     npWrite();
 
     // Escreve mensagem de derrota no display:
-    char *derrota[] = {
-        "RESPOSTA ERRADA ",
-        "                ",
-        "TENTE NOVAMENTE ",
-        "                "};
-
-    writeString(derrota, ssd, frame_area);
+    organizeStrings("RESPOSTA ERRADA ", "                ", "TENTE NOVAMENTE ", ssd, frame_area);
     
     // Toca som de derrota:
     play_tone(BUZZER_PIN_B, 420, 100);
@@ -586,13 +556,7 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
  */
 void apresentaVitoria(uint8_t *ssd, struct render_area frame_area){
     // Escreve mensagem de vitoria no display:
-    char *derrota[] = {
-        "   MUITO BEM    ",
-        "    CORRETO     ",
-        " CONTINUE ASSIM ",
-        "                "};
-
-    writeString(derrota, ssd, frame_area);
+    organizeStrings("   MUITO BEM    ", "    CORRETO     ", " CONTINUE ASSIM ", ssd, frame_area);
 
     // Toca som de vitória:
     play_tone(BUZZER_PIN_B, 400, 100);
