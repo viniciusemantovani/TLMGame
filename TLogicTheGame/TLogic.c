@@ -25,6 +25,13 @@ const uint8_t I2C_SCL = 15;
 const uint8_t BUTTON_A = 5;
 const uint8_t BUTTON_B = 6;
 
+// Variável para escolha entre jogos:
+bool game; // true - lógica pura, false - lógica matemática;
+
+//---------------------------------------------------------------------------------------------------------------
+
+    // Variáveis globais para jogo de lógica:
+
 // Variáveis relacionadas ao cursor:
 uint8_t posicao_atual; // Posição do cursor do jogador na matriz de LED.
 uint8_t cor_atual; // Cor atual do cursor (0 - apagado, 1 - azul, 2 - verde, 3 - vermelho).
@@ -44,6 +51,12 @@ uint8_t cor_led_9_verify = 0;
 // Variáveis para controle do jogo:
 bool new_fase = true; // Determina se uma nova fase deve ser iniciada ou não.
 bool vitoria = true; // Determina se uma fase foi vencida ou perdida.
+
+//---------------------------------------------------------------------------------------------------------------
+
+    // Variáveis globais para jogo de matemática:
+
+
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -443,12 +456,7 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
 void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
 
     // Mensagem de welcoming:
-    char *welcome[] = {
-        " Bem vindo ao   ",
-        "                ",
-        "    TLogic!     "};
-
-    writeString(welcome, ssd, frame_area); // Escreve a mensagem de welcoming no display
+    organizeStrings(" Bem vindo ao   ", "                ", "    TLogic!     ", ssd, frame_area);
 
     // Som de welcoming:
     play_tone(BUZZER_PIN_A, 300, 200);
@@ -464,36 +472,45 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     sleep_ms(500);
     play_tone(BUZZER_PIN_A, 300, 200);
 
-    // Mensagem tutorial 1:
-    organizeStrings(" O jogador deve ", "    repetir     ", "  a logica dos  ", ssd, frame_area);
+    if(game){ // Se for jogo de lógica pura:
+        // Mensagem tutorial 1:
+        organizeStrings(" O jogador deve ", "    repetir     ", "  a logica dos  ", ssd, frame_area);
 
-    // Aguarda pressionamento do botão A.
-    while(gpio_get(BUTTON_A));
-    sleep_ms(500);
-    play_tone(BUZZER_PIN_A, 300, 200);
+        // Aguarda pressionamento do botão A.
+        while(gpio_get(BUTTON_A));
+        sleep_ms(500);
+        play_tone(BUZZER_PIN_A, 300, 200);
 
-    // Mensagem tutorial 2:
-    organizeStrings("quadros de cima ", "  nos quadros   ", "   de baixo     ", ssd, frame_area);
+        // Mensagem tutorial 2:
+        organizeStrings("quadros de cima ", "  nos quadros   ", "   de baixo     ", ssd, frame_area);
 
-    // Aguarda pressionamento do botão A.
-    while(gpio_get(BUTTON_A));
-    sleep_ms(500);
-    play_tone(BUZZER_PIN_A, 300, 200);
+        // Aguarda pressionamento do botão A.
+        while(gpio_get(BUTTON_A));
+        sleep_ms(500);
+        play_tone(BUZZER_PIN_A, 300, 200);
 
-    // Mensagem tutorial 2:
-    organizeStrings("  A troca cor   ", "                ", "  B define cor  ", ssd, frame_area);
+        // Mensagem tutorial 2:
+        organizeStrings("  A troca cor   ", "                ", "  B define cor  ", ssd, frame_area);
 
-    // Aguarda pressionamento do botão A.
-    while(gpio_get(BUTTON_A));
-    sleep_ms(500);
-    play_tone(BUZZER_PIN_A, 300, 200);
+        // Aguarda pressionamento do botão A.
+        while(gpio_get(BUTTON_A));
+        sleep_ms(500);
+        play_tone(BUZZER_PIN_A, 300, 200);
 
-     // Mensagem tutorial 3:
-     organizeStrings("JS move cursor  ", "e pressionado   ", "confirma cores  ", ssd, frame_area);
+        // Mensagem tutorial 3:
+        organizeStrings("JS move cursor  ", "e pressionado   ", "confirma cores  ", ssd, frame_area);
 
-    // Aguarda pressionamento do botão A para começar jogo.
-    while(gpio_get(BUTTON_A));
-    sleep_ms(500);
+        // Aguarda pressionamento do botão A para começar jogo.
+        while(gpio_get(BUTTON_A));
+        sleep_ms(500);
+
+    }
+
+    // Som de início de Jogo:
+    play_tone(BUZZER_PIN_B, 450, 200);
+    sleep_ms(100);
+    play_tone(BUZZER_PIN_B, 450, 200);
+    sleep_ms(1000);
 }
 
 /**
@@ -594,6 +611,7 @@ void generalInit(){
 
 int main(){
 
+    game = true; //seta o jogo como o de logica pura.
     uint8_t fase_atual = 0; // Define a fase em que o jogador se encontra (Não tem relação com nível de dificuldade).
 
         // Inicializacao geral:
@@ -630,45 +648,42 @@ int main(){
 
     //-------------------------------------------------------------------------
 
-        // Configurações de início de jogo:
+        // Configurações finais pré-jogo:
 
-    // Som de início de Jogo:
-    play_tone(BUZZER_PIN_B, 450, 200);
-    sleep_ms(100);
-    play_tone(BUZZER_PIN_B, 450, 200);
-    sleep_ms(1000);
+    if(game){
+        // Acende cursor em azul:
+        npSetLED(posicao_atual, 0, 0, 200);
 
-    // Acende cursor em azul:
-    npSetLED(posicao_atual, 0, 0, 200);
+        // Inicializa timers para verificação de botões:
+        struct repeating_timer timer_A; // Timer para controle do botão A.
+        add_repeating_timer_ms(100, btnARepeat, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
 
-    // Inicializa timers para verificação de botões:
-    struct repeating_timer timer_A; // Timer para controle do botão A.
-    add_repeating_timer_ms(100, btnARepeat, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
-
-    struct repeating_timer timer_B; // Timer para controle do botão B.
-    add_repeating_timer_ms(100, btnBRepeat, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
+        struct repeating_timer timer_B; // Timer para controle do botão B.
+        add_repeating_timer_ms(100, btnBRepeat, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
+    }
 
     //-------------------------------------------------------------------------
 
-        // Loop do programa:
-
     while(true){
 
-        if(new_fase){ // Verifica se está-se iniciando uma nova fase.
-            sleep_ms(100);
-            if(vitoria){
-                fase_atual++;
-                if(fase_atual > 1) apresentaVitoria(ssd, frame_area);
-                inicioFase(fase_atual, ssd, frame_area); // Inicia nova fase.
-                vitoria = false;
-                new_fase = false;
-            } else{
-                restartFromScratch(&fase_atual, ssd, frame_area);
+        joystick_read_axis(&vrx_value, &vry_value); // Lê valores do joystick (0-4095)
+
+        if(game){
+            if(new_fase){ // Verifica se está-se iniciando uma nova fase.
+                sleep_ms(100);
+                if(vitoria){ // Verifica se o jogador passou de fase.
+                    fase_atual++;
+                    if(fase_atual > 1) apresentaVitoria(ssd, frame_area);
+                    inicioFase(fase_atual, ssd, frame_area); // Inicia nova fase.
+                    vitoria = false;
+                    new_fase = false;
+                } else{
+                    restartFromScratch(&fase_atual, ssd, frame_area);
+                }
             }
+            posicao_atual = movCursor(posicao_atual, cor_atual, vrx_value, vry_value); // Determina nova posição do cursor.
         }
         
-        joystick_read_axis(&vrx_value, &vry_value); // Lê valores do joystick (0-4095)
-        posicao_atual = movCursor(posicao_atual, cor_atual, vrx_value, vry_value);
         npWrite(); // Escreve os dados nos LEDs.
         sleep_us(100000);
     }
