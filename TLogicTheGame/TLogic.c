@@ -155,7 +155,7 @@ bool btnARepeat(struct repeating_timer *t){
 }
 
 /**
- * Verifica se o jogador venceu uma rodada
+ * Verifica se o jogador venceu uma rodada.
  */
 bool verifyVictory(){
     if(cor_led_8 == cor_led_8_verify
@@ -222,7 +222,6 @@ void acendeConjunto(uint8_t fst, uint8_t scd, uint8_t trd, uint8_t fth, uint8_t 
  * @param color1 cor correta para led 1
  */
 void criaVerify(uint8_t color8, uint8_t color9, uint8_t color0, uint8_t color1){
-
     cor_led_8_verify = color8;
     cor_led_9_verify = color9;
     cor_led_0_verify = color0;
@@ -231,6 +230,7 @@ void criaVerify(uint8_t color8, uint8_t color9, uint8_t color0, uint8_t color1){
 
 /**
  * @brief Gera uma cor aleatória (0 a 3, 0 - apagado, 1 - azul, 2 - verde, 3 - vermelho).
+ * @return inteiro de oito bits representando a cor gerada
  */
 uint8_t geraCorRandom(){
     uint32_t random = get_rand_32();
@@ -240,10 +240,25 @@ uint8_t geraCorRandom(){
 }
 
 /**
+ * @brief Gera um conjunto de cores aleatórias (usado na função de determinação de mapa)
+ * @param led0 primeiro armazenador de cor aleatória
+ * @param led1 segundo armazenador de cor aleatória
+ * @param led2 terceiro armazenador de cor aleatória
+ * @param led3 quarto armazenador de cor aleatória
+ */
+void geraConjuntoCor(uint8_t *led0, uint8_t *led1,uint8_t *led2, uint8_t *led3){
+    *led0 = geraCorRandom();
+    *led1 = geraCorRandom();
+    *led2 = geraCorRandom();
+    *led3 = geraCorRandom();
+}
+
+/**
  * @brief Determina e desenha o mapa de uma nova fase (aleatoriamente, seguindo parâmetros lógicos)
  */
 void determinaMap(){
 
+    // Definição dos armazenadores de cores dos leds do primeiro quadro;
     uint8_t led_up_left1;
     uint8_t led_up_right1;
     uint8_t led_bottom_right1;
@@ -258,30 +273,24 @@ void determinaMap(){
     // Determina aleatoriamente a lógica baseada no primeiro quadro para criar o segundo:
     uint32_t random = get_rand_32();
     uint32_t aux = abs(random);
-    uint8_t alt2 = aux%4; // fator aleatório para geração do segundo quadro com base no primeiro. (0 - 90 graus no horario, 1 - no antihorario, 2 - 180, 3 - mudança de cores).
+    uint8_t alt2 = aux%4; // fator aleatório para geração do segundo quadro com base no primeiro,
+    // (0 - 90 graus no horario, 1 - no antihorario, 2 - 180, 3 - mudança de cores).
     
     // Determina cores dos quatro leds do primeiro quadro aleatoriamente:
-
     if(alt2 <= 1){ // Caso seja rotação de 90 graus.
         do{ // Impede que sejam todos iguais no caso de rotacionar, pois nesse caso não é possível concluir nada.
-            led_up_left1 = geraCorRandom();
-            led_up_right1 = geraCorRandom();
-            led_bottom_right1 = geraCorRandom();
-            led_bottom_left1 = geraCorRandom();
+            geraConjuntoCor(&led_up_left1, &led_up_right1, 
+            &led_bottom_right1, &led_bottom_left1); // Gera as cores aleatórias.
         } while(led_bottom_left1 == led_up_right1 && led_up_left1 == led_bottom_right1);
     }
     else if(alt2 <= 2){
         do{ // Impede que sejam todos iguais no caso de rotacionar, pois nesse caso não é possível concluir nada.
-            led_up_left1 = geraCorRandom();
-            led_up_right1 = geraCorRandom();
-            led_bottom_right1 = geraCorRandom();
-            led_bottom_left1 = geraCorRandom();
+            geraConjuntoCor(&led_up_left1, &led_up_right1, 
+            &led_bottom_right1, &led_bottom_left1); // Gera as cores aleatórias.
         } while(led_up_left1 == led_up_right1 && led_up_left1 == led_bottom_left1 && led_up_left1 == led_bottom_right1);
     } else{
-        led_up_left1 = geraCorRandom();
-        led_up_right1 = geraCorRandom();
-        led_bottom_right1 = geraCorRandom();
-        led_bottom_left1 = geraCorRandom();
+        geraConjuntoCor(&led_up_left1, &led_up_right1, 
+        &led_bottom_right1, &led_bottom_left1); // Gera as cores aleatórias.
     }
 
     // Acende leds do primeiro quadro:
@@ -292,11 +301,10 @@ void determinaMap(){
     // Verifica se não haverá mudança de cores:
     if(alt2 != 3){
         // Determina cores dos quatro leds do terceiro quadro aleatoriamente:
-        led_up_left3 = geraCorRandom();
-        led_up_right3 = geraCorRandom();
-        led_bottom_right3 = geraCorRandom();
-        led_bottom_left3 = geraCorRandom();
-    } else{
+        geraConjuntoCor(&led_up_left3, &led_up_right3, 
+        &led_bottom_right3, &led_bottom_left3); // Gera as cores aleatórias.
+
+    } else{ // Caso haja mudança de cores:
         uint8_t color = -1; // Armazena uma cor possível para um led do terceiro quadro.
         uint8_t leds_trd[4];
         for(uint8_t i = 0; i < 4; i++){ // para cada led do terceiro quadro:
@@ -309,7 +317,7 @@ void determinaMap(){
             // ^ os leds do terceiro quadro só podem ter cores que estiverem em algum dos leds do primeiro!
         }
 
-        // Determina cores dos quatro leds do terceiro quadro aleatoriamente:
+        // Efetiva cores dos quatro leds do terceiro quadro caso ocorra mudança de cor do primeiro para o terceiro quadro:
         led_up_left3 = leds_trd[0];
         led_up_right3 = leds_trd[1];
         led_bottom_right3 = leds_trd[2];
@@ -323,24 +331,18 @@ void determinaMap(){
 
         // Rotação sentido horário 90 graus:
         case 0:
-
-                printf("entrou no 0\n");
-
                 acendeConjunto(20,19,18,21,led_up_left1,led_up_right1,led_bottom_right1,led_bottom_left1);
                 criaVerify(led_bottom_left3, led_up_left3, led_up_right3, led_bottom_right3);
                 break;
 
         // Rotação sentido antihorário 90 graus:
         case 1:
-                printf("entrou no 1\n");
-
                 acendeConjunto(18,21,20,19,led_up_left1,led_up_right1,led_bottom_right1,led_bottom_left1);
                 criaVerify(led_up_right3, led_bottom_right3, led_bottom_left3, led_up_left3);
                 break;
 
         // Rotação 180 graus:
         case 2:
-                printf("entrou no 2\n");
                 acendeConjunto(19,18,21,20,led_up_left1,led_up_right1,led_bottom_right1,led_bottom_left1);
                 criaVerify(led_bottom_right3, led_bottom_left3, led_up_left3, led_up_right3);
                 break;
@@ -348,7 +350,6 @@ void determinaMap(){
         // Troca cores:
         case 3:
                 // Determina novas cores:
-                printf("entrou no 3\n");
                 uint8_t veri_8, veri_9, veri_0, veri_1;
 
                 uint8_t new_col[4]; // Armazena cores corretas para conversão (cor índice -> cor elemento, de 0 a 3)
@@ -356,43 +357,31 @@ void determinaMap(){
                 new_col[1] = geraCorRandom();
                 new_col[2] = geraCorRandom();
                 new_col[3] = geraCorRandom();
-                printf("out funct 0 %d\n", new_col[0]);
-                printf("out funct 1 %d\n", new_col[1]);
-                printf("out funct 2 %d\n", new_col[2]);
-                printf("out funct 3 %d\n", new_col[3]);
 
                 //Determina cada cor correta por posição:
                 for(uint8_t i = 0; i < 4; i++){
                     if(led_up_left1 == i){
                         acendeLed(21, new_col[i]);
-                        printf("acende 21 = %d\n", new_col[i]);
                     }
                     if(led_up_right1 == i){
-                        printf("acende 20 = %d\n", new_col[i]);
                         acendeLed(20, new_col[i]);
                     }
                     if(led_bottom_right1 == i){
-                        printf("acende 19 = %d\n", new_col[i]);
                         acendeLed(19, new_col[i]);
                     }                
                     if(led_bottom_left1 == i){
-                        printf("acende 18 = %d\n", new_col[i]);
                         acendeLed(18, new_col[i]);
                     }
                     if(led_up_left3 == i){
                         veri_8 = new_col[i];
-                        printf("veri 8 = %d\n", new_col[i]);
                     }
                     if(led_up_right3 == i){
                         veri_9 = new_col[i];
-                        printf("veri 9 = %d\n", new_col[i]);
                     }
                     if(led_bottom_right3 == i){
-                        printf("veri 0 = %d\n", new_col[i]);
                         veri_0 = new_col[i];
                     }
                     if(led_bottom_left3 == i){
-                        printf("veri 1 = %d\n", new_col[i]);
                         veri_1 = new_col[i];
                     }
                 }
@@ -429,11 +418,9 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
     determinaMap();
 
     // Reseta parte manipulável do mapa:
-    acendeLed(0, 0);
-    acendeLed(1, 0);
-    acendeLed(8, 0);
-    acendeLed(9, 0);
-    acendeLed(posicao_atual, cor_atual);
+    acendeConjunto(0, 1, 8, 9, 0, 0, 0, 0);
+
+    acendeLed(posicao_atual, cor_atual); // Acende o cursor novamente
 
     cor_led_0 = 0;
     cor_led_1 = 0;
@@ -525,14 +512,8 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
 void desenhaX(){
 
     // Seta leds pertencentes ao X:
-    npSetLED(0, 200, 0, 0);
-    npSetLED(6, 200, 0, 0);
-    npSetLED(8, 200, 0, 0);
-    npSetLED(12, 200, 0, 0);
-    npSetLED(16, 200, 0, 0);
-    npSetLED(24, 200, 0, 0);
-    npSetLED(4, 200, 0, 0);
-    npSetLED(18, 200, 0, 0);
+    acendeConjunto(0, 6, 8, 12, 3, 3, 3, 3);
+    acendeConjunto(16, 24, 4, 18, 3, 3, 3, 3);
     npSetLED(20, 200, 0, 0);
 
     // Apaga demais leds:
@@ -584,6 +565,11 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
 
 }
 
+/**
+ * @brief Apresenta ao jogador indicativos de vitória.
+ * @param ssd dados do display
+ * @param frame_area area do display
+ */
 void apresentaVitoria(uint8_t *ssd, struct render_area frame_area){
     // Escreve mensagem de vitoria no display:
     char *derrota[] = {
@@ -602,11 +588,10 @@ void apresentaVitoria(uint8_t *ssd, struct render_area frame_area){
     sleep_ms(500);
 }
 
-int main(){
-
-    uint8_t fase_atual = 0; // Define a fase em que o jogador se encontra (Não tem relação com nível de dificuldade).
-
-        // Inicializacao geral:
+/**
+ * @brief Inicializa IO, pwm para buzzers, matriz de led, botões e joystick.
+ */
+void generalInit(){
 
     stdio_init_all();
     pwm_init_buzzer(BUZZER_PIN_A); // inicializa o buzzer A.
@@ -626,6 +611,17 @@ int main(){
     gpio_pull_up(BUTTON_B);
 
     setup_joystick(); //Inicaliza o joystick.
+
+}
+
+int main(){
+
+    uint8_t fase_atual = 0; // Define a fase em que o jogador se encontra (Não tem relação com nível de dificuldade).
+
+        // Inicializacao geral:
+    
+    generalInit();
+
     uint16_t vrx_value, vry_value; // Para armazenar valores dos eixos x e y do joystick.
     posicao_atual = 0; // Posição inicial do cursor na matriz de led,
     cor_atual = 1; // Inicia em azul.
@@ -699,4 +695,3 @@ int main(){
         sleep_us(100000);
     }
 }
-
