@@ -28,6 +28,10 @@ const uint8_t BUTTON_B = 6;
 // Variável para escolha entre jogos:
 bool game; // true - lógica pura, false - lógica matemática;
 
+// Variáveis para controle dos jogos:
+bool new_fase = true; // Determina se uma nova fase deve ser iniciada ou não.
+bool vitoria = true; // Determina se uma fase foi vencida ou perdida.
+
 //---------------------------------------------------------------------------------------------------------------
 
     // Variáveis globais para jogo de lógica:
@@ -48,15 +52,15 @@ uint8_t cor_led_1_verify = 0;
 uint8_t cor_led_8_verify = 0;
 uint8_t cor_led_9_verify = 0;
 
-// Variáveis para controle do jogo:
-bool new_fase = true; // Determina se uma nova fase deve ser iniciada ou não.
-bool vitoria = true; // Determina se uma fase foi vencida ou perdida.
-
 //---------------------------------------------------------------------------------------------------------------
 
     // Variáveis globais para jogo de matemática:
 
+int16_t resultado_correto; // Resultado correto do cálculo.
 
+int16_t alg[2]; // algarismos da resposta do jogador.
+
+uint8_t which_digit; // Armazena o número do dígito que está sendo editado pelo jogador no momento.
 
 //----------------------------------------------------------------------------------------------------------------
 
@@ -104,7 +108,249 @@ void acendeLed(uint8_t posicao, uint8_t cor){
                 return; 
         case 3: npSetLED(posicao, 200, 0, 0);
                 return; 
+        default: return;
     }
+}
+
+/**
+ * @brief Acende os Leds corretos dado um inteiro (para reproduzí-lo na matriz).
+ * @param num número a ser reproduzido na matriz (se for 32760 é multiplicação, 32761 é divisão, 32762 é soma, 32763 é subtração)
+ */
+void alfabetoNum(int16_t num){
+    uint16_t div = 10;
+
+    if(num < 32760){
+        while(num/div != 0) div = div*10; // Busca primeiro múltiplo de 10 maior que num.
+    }
+
+    int16_t aux = num;
+    // Escreve cada algarismo, do maior para o menor, no led.
+    while(div != 1){
+        if(num < 32760){
+            num = aux;
+            aux = num%(div/10);
+            num = (num%div - num%(div/10))/(div/10);
+            div = div/10;
+        } else div = 1;
+
+        switch(num){
+            case 0: acendeLed(1,3);
+                    acendeLed(2,3);
+                    acendeLed(3,3);
+                    acendeLed(6,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(13,3);
+                    acendeLed(16,3);
+                    acendeLed(18,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;
+
+            case 1: acendeLed(2,3);
+                    acendeLed(7,3);
+                    acendeLed(12,3);
+                    acendeLed(16,3);
+                    acendeLed(17,3);
+                    acendeLed(22,3);
+                    break;
+
+            case 2: acendeLed(1,3);
+                    acendeLed(2,3);
+                    acendeLed(3,3);
+                    acendeLed(6,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(18,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;
+
+            case 3: acendeLed(1,3);
+                    acendeLed(2,3);
+                    acendeLed(3,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(18,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;
+
+            case 4: acendeLed(1,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(16,3);
+                    acendeLed(18,3);
+                    acendeLed(21,3);
+                    acendeLed(23,3);    
+                    break;
+
+            case 5: acendeLed(1,3);
+                    acendeLed(2,3);
+                    acendeLed(3,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(16,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;
+
+            case 6: acendeLed(1,3);
+                    acendeLed(2,3);
+                    acendeLed(3,3);
+                    acendeLed(6,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(16,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;
+
+            case 7: acendeLed(1,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(18,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;
+
+            case 8: acendeLed(1,3);
+                    acendeLed(2,3);
+                    acendeLed(3,3);
+                    acendeLed(6,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(16,3);
+                    acendeLed(18,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;  
+                    
+            case 9: acendeLed(1,3);
+                    acendeLed(2,3);
+                    acendeLed(3,3);
+                    acendeLed(8,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(16,3);
+                    acendeLed(18,3);
+                    acendeLed(21,3);
+                    acendeLed(22,3);
+                    acendeLed(23,3);
+                    break;  
+
+            case 32760: acendeLed(6,3);
+                    acendeLed(8,3);
+                    acendeLed(12,3);
+                    acendeLed(16,3);
+                    acendeLed(18,3);
+                    break;
+
+            case 32761: acendeLed(4,3);
+                    acendeLed(6,3);
+                    acendeLed(12,3);
+                    acendeLed(18,3);
+                    acendeLed(20,3);
+                    break;
+
+            case 32762: acendeLed(7,3);
+                    acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    acendeLed(17,3);
+                    break;
+
+            case 32763: acendeLed(11,3);
+                    acendeLed(12,3);
+                    acendeLed(13,3);
+                    break;
+
+            default: break;
+
+        }
+        
+        npWrite();
+        npClear();
+        sleep_ms(1000);
+    }
+}
+
+/**
+ * @brief Gera um número aleatório positivo.
+ */
+int32_t geraAbs(){
+    uint32_t random = get_rand_32();
+    int32_t aux = abs(random);
+    return aux;
+}
+
+/**
+ * @brief Gera uma conta aleatória para o jogo de matemática.
+ */
+int16_t geraConta(){
+
+    uint16_t op = geraAbs()%4; // Operação
+
+    uint16_t p2; // Operante    
+    uint16_t p1; // Operado
+
+    if(op + 32760 == 32761){
+        p2 = 1 + geraAbs()%9; // Impede que o divisor seja 0.
+        p1 = geraAbs()%10;
+
+        p1 = p1*p2; // Garante divisão inteira.
+
+    } else if(op + 32760 == 32763){
+        p2 = geraAbs()%10;
+        
+        do{ // Impede resultado negativo.
+            p1 = geraAbs()%10;
+        } while(p1 < p2);
+
+    } else{
+        p2 = geraAbs()%10;
+        p1 = geraAbs()%10;
+    }
+
+    alfabetoNum(p1);
+    sleep_ms(1000);
+    npClear();
+
+    alfabetoNum(op + 32760);
+    sleep_ms(1000);
+    npClear();
+
+    alfabetoNum(p2);
+    npClear();
+    sleep_ms(1000);
+    npWrite();
+
+    switch(op + 32760){
+        case 32760: return p1*p2;
+        case 32761: return p1/p2;
+        case 32762: return p1+p2;
+        case 32763: return p1-p2;
+    }
+
 }
 
 /**
@@ -165,7 +411,7 @@ uint8_t movCursor(uint8_t posicao_atual, uint8_t cor_atual, uint16_t x, uint16_t
 /**
  * @brief Rotina de tratamento do timer de controle do botão A.
  */
-bool btnARepeat(struct repeating_timer *t){
+bool btnARepeatLogic(struct repeating_timer *t){
     static absolute_time_t click_time_A = 0;
     
     if(!gpio_get(BUTTON_A) && absolute_time_diff_us(click_time_A, get_absolute_time()) > 200000){
@@ -181,9 +427,9 @@ bool btnARepeat(struct repeating_timer *t){
 }
 
 /**
- * Verifica se o jogador venceu uma rodada.
+ * @brief Verifica se o jogador venceu uma rodada de lógica.
  */
-bool verifyVictory(){
+bool verifyVictoryLogic(){
     if(cor_led_8 == cor_led_8_verify
     && cor_led_9 == cor_led_9_verify
     && cor_led_0 == cor_led_0_verify
@@ -192,9 +438,50 @@ bool verifyVictory(){
 }
 
 /**
+ * @brief Verifica se o jogador venceu uma rodada de matemática.
+ */
+bool verifyVictoryMath(){
+
+    if(10*alg[0] + alg[1] == resultado_correto) return true;
+    else return false;
+}
+
+/**
+ * @brief Rotina de tratamento do timer de controle do botão A.
+ */
+bool btnARepeatMath(struct repeating_timer *t){
+    static absolute_time_t click_time_A = 0;
+    if(!gpio_get(BUTTON_A) && absolute_time_diff_us(click_time_A, get_absolute_time()) > 200000){
+        click_time_A = get_absolute_time();
+        which_digit++;
+        if(which_digit > 1){
+            which_digit = 0;
+            vitoria = verifyVictoryMath();
+            new_fase = true;
+        }
+    }
+
+    return true;
+}
+
+/**
  * @brief Rotina de tratamento do timer de controle do botão B.
  */
-bool btnBRepeat(struct repeating_timer *t){
+bool btnBRepeatMath(struct repeating_timer *t){
+    static absolute_time_t click_time_B = 0;
+    
+    if(!gpio_get(BUTTON_B) && absolute_time_diff_us(click_time_B, get_absolute_time()) > 200000){
+        click_time_B = get_absolute_time();
+        if(which_digit == 1) which_digit--;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Rotina de tratamento do timer de controle do botão B.
+ */
+bool btnBRepeatLogic(struct repeating_timer *t){
     static absolute_time_t click_time_B = 0;
     static absolute_time_t click_time_JS = 0;
     
@@ -209,14 +496,15 @@ bool btnBRepeat(struct repeating_timer *t){
             case 8: cor_led_8 = cor_atual;
                     break;  
             case 9: cor_led_9 = cor_atual;
-                    break;      
+                    break;     
+            default: break; 
         }
     }
 
     if(!gpio_get(22) && absolute_time_diff_us(click_time_JS, get_absolute_time()) > 200000){
         click_time_JS = get_absolute_time();
         new_fase = true;
-        vitoria = verifyVictory();
+        vitoria = verifyVictoryLogic();
     }
 
     return true;
@@ -259,9 +547,7 @@ void criaVerify(uint8_t color8, uint8_t color9, uint8_t color0, uint8_t color1){
  * @return inteiro de oito bits representando a cor gerada
  */
 uint8_t geraCorRandom(){
-    uint32_t random = get_rand_32();
-    int32_t aux = abs(random);
-    uint8_t ret = aux%4;
+    uint8_t ret = geraAbs()%4;
     return ret;
 }
 
@@ -280,7 +566,7 @@ void geraConjuntoCor(uint8_t *led0, uint8_t *led1,uint8_t *led2, uint8_t *led3){
 }
 
 /**
- * @brief Determina e desenha o mapa de uma nova fase (aleatoriamente, seguindo parâmetros lógicos)
+ * @brief Determina e desenha o mapa de uma nova fase do jogo de lógica pura (aleatoriamente, seguindo parâmetros lógicos)
  */
 void determinaMap(){
 
@@ -297,9 +583,7 @@ void determinaMap(){
     uint8_t led_bottom_left3;
 
     // Determina aleatoriamente a lógica baseada no primeiro quadro para criar o segundo:
-    uint32_t random = get_rand_32();
-    uint32_t aux = abs(random);
-    uint8_t alt2 = aux%4; // fator aleatório para geração do segundo quadro com base no primeiro,
+    uint8_t alt2 = geraAbs()%4; // fator aleatório para geração do segundo quadro com base no primeiro,
     // (0 - 90 graus no horario, 1 - no antihorario, 2 - 180, 3 - mudança de cores).
     
     // Determina cores dos quatro leds do primeiro quadro aleatoriamente:
@@ -335,9 +619,7 @@ void determinaMap(){
         uint8_t leds_trd[4];
         for(uint8_t i = 0; i < 4; i++){ // para cada led do terceiro quadro:
             do{
-                random = get_rand_32();
-                aux = abs(random);
-                color = aux%4;
+                color = geraAbs()%4;
                 leds_trd[i] = color;
             } while(color != led_up_left1 && color != led_up_right1 && color != led_bottom_right1 && color != led_bottom_left1);
             // ^ os leds do terceiro quadro só podem ter cores que estiverem em algum dos leds do primeiro!
@@ -413,6 +695,9 @@ void determinaMap(){
                 }
 
                 criaVerify(veri_8, veri_9, veri_0, veri_1);
+                break;
+
+        default: break;
     }
 }
 
@@ -464,6 +749,19 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     play_tone(BUZZER_PIN_A, 300, 200);
     sleep_ms(1000);
 
+    // Escolha do jogo:
+    organizeStrings(" Aperte A para  ", "  TLogic ou B   ", "  para TMath    ", ssd, frame_area);
+
+    while(gpio_get(BUTTON_A) && gpio_get(BUTTON_B)){
+        if(!gpio_get(BUTTON_A)){
+            game = true;
+        } else if(!gpio_get(BUTTON_B)){
+            game = false;
+        }
+    };
+    sleep_ms(500);
+    play_tone(BUZZER_PIN_A, 300, 200);
+
     // Mensagem introdutória:
     organizeStrings("  Pressione A   ", "para prosseguir ", "  a cada etapa  ", ssd, frame_area);
 
@@ -472,7 +770,9 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     sleep_ms(500);
     play_tone(BUZZER_PIN_A, 300, 200);
 
-    if(game){ // Se for jogo de lógica pura:
+    // Jogo de lógica pura:
+    if(game){ 
+        
         // Mensagem tutorial 1:
         organizeStrings(" O jogador deve ", "    repetir     ", "  a logica dos  ", ssd, frame_area);
 
@@ -489,7 +789,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
         sleep_ms(500);
         play_tone(BUZZER_PIN_A, 300, 200);
 
-        // Mensagem tutorial 2:
+        // Mensagem tutorial 3:
         organizeStrings("  A troca cor   ", "                ", "  B define cor  ", ssd, frame_area);
 
         // Aguarda pressionamento do botão A.
@@ -497,13 +797,39 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
         sleep_ms(500);
         play_tone(BUZZER_PIN_A, 300, 200);
 
-        // Mensagem tutorial 3:
+        // Mensagem tutorial 4:
         organizeStrings("JS move cursor  ", "e pressionado   ", "confirma cores  ", ssd, frame_area);
 
         // Aguarda pressionamento do botão A para começar jogo.
         while(gpio_get(BUTTON_A));
         sleep_ms(500);
 
+    }
+
+    // Jogo de lógica matemática:
+    else{
+        // Mensagem tutorial 1:
+        organizeStrings(" O jogador deve ", "  executar os   ", "    calculos    ", ssd, frame_area);
+
+        // Aguarda pressionamento do botão A.
+        while(gpio_get(BUTTON_A));
+        sleep_ms(500);
+        play_tone(BUZZER_PIN_A, 300, 200);
+
+        // Mensagem tutorial 2:
+        organizeStrings("  A confirma    ", " um algarismo   ", " B desconfirma  ", ssd, frame_area);
+
+        // Aguarda pressionamento do botão A.
+        while(gpio_get(BUTTON_A));
+        sleep_ms(500);
+        play_tone(BUZZER_PIN_A, 300, 200);
+
+        // Mensagem tutorial 3:
+        organizeStrings("  JS aumenta e  ", "   diminui um   ", "   algarismo    ", ssd, frame_area);
+
+        // Aguarda pressionamento do botão A para começar jogo.
+        while(gpio_get(BUTTON_A));
+        sleep_ms(500);
     }
 
     // Som de início de Jogo:
@@ -563,7 +889,8 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
     *fase_atual = 0;
     new_fase = true;
     vitoria = true;
-
+    alg[0] = 0;
+    alg[1] = 1;
 }
 
 /**
@@ -609,9 +936,36 @@ void generalInit(){
 
 }
 
+/** 
+ * @brief Apresenta os valores atuais dos dígitos no display.
+ * @param ssd dados do display
+ * @param frame_area area do display
+*/
+void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area){
+    char str[17];
+    sprintf(str, "       %d%d      ", alg[0], alg[1]);
+
+    organizeStrings("                ", str, "                ", ssd, frame_area);
+}
+
+/**
+ * @brief Altera o número apresentado no display baseado no movimento do joystick.
+ * @param ssd dados do display
+ * @param frame_area area do display
+ * @param vry representa o movimento do joystick no eixo y (0-4095)
+ */
+void alterDisplayByJoystk(uint8_t *ssd, struct render_area frame_area, uint16_t vry){
+    if(vry > 2047 + 1000 && alg[which_digit] < 9){
+        alg[which_digit] += 1;
+    }if(vry < 2047 - 1000 && alg[which_digit] > 0){
+        alg[which_digit] -= 1;
+    }
+    showDigitsOnDisplay(ssd, frame_area);
+}
+
 int main(){
 
-    game = true; //seta o jogo como o de logica pura.
+    game = false; //seta o jogo como o de logica pura.
     uint8_t fase_atual = 0; // Define a fase em que o jogador se encontra (Não tem relação com nível de dificuldade).
 
         // Inicializacao geral:
@@ -645,29 +999,46 @@ int main(){
     clearDisplay(ssd, frame_area);
 
     mensagensInicio(ssd, frame_area); // Printa no display as mensagens de início.
-
     //-------------------------------------------------------------------------
 
         // Configurações finais pré-jogo:
 
+    // Jogo de lógica:
     if(game){
+
         // Acende cursor em azul:
         npSetLED(posicao_atual, 0, 0, 200);
 
         // Inicializa timers para verificação de botões:
         struct repeating_timer timer_A; // Timer para controle do botão A.
-        add_repeating_timer_ms(100, btnARepeat, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
+        add_repeating_timer_ms(100, btnARepeatLogic, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
 
         struct repeating_timer timer_B; // Timer para controle do botão B.
-        add_repeating_timer_ms(100, btnBRepeat, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
+        add_repeating_timer_ms(100, btnBRepeatLogic, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
+
+    // Jogo de matemática:
+    } else{
+
+        // Inicializa timers para verificação de botões:
+        struct repeating_timer timer_A; // Timer para controle do botão A.
+        add_repeating_timer_ms(100, btnARepeatMath, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
+
+        struct repeating_timer timer_B; // Timer para controle do botão B.
+        add_repeating_timer_ms(100, btnBRepeatMath, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
+
+        //Limpa display:
+        organizeStrings("                ", "                ", "                ", ssd, frame_area);
     }
 
     //-------------------------------------------------------------------------
+
+    which_digit = 0;
 
     while(true){
 
         joystick_read_axis(&vrx_value, &vry_value); // Lê valores do joystick (0-4095)
 
+        // Jogo de lógica pura:
         if(game){
             if(new_fase){ // Verifica se está-se iniciando uma nova fase.
                 sleep_ms(100);
@@ -682,6 +1053,28 @@ int main(){
                 }
             }
             posicao_atual = movCursor(posicao_atual, cor_atual, vrx_value, vry_value); // Determina nova posição do cursor.
+        } 
+        
+        // Jogo de matemática:
+        else{
+
+            if(new_fase){
+                sleep_ms(100);
+                if(vitoria){
+                    fase_atual++;
+                    if(fase_atual > 1) apresentaVitoria(ssd, frame_area);
+                    play_tone(BUZZER_PIN_B, 400, 200); // Som de início de fase
+                    vitoria = false;
+                    new_fase = false;
+                    resultado_correto = geraConta();
+                    alg[0] = 0;
+                    alg[1] = 0;
+                    showDigitsOnDisplay(ssd, frame_area);
+                } else{
+                    restartFromScratch(&fase_atual, ssd, frame_area);
+                }
+            }
+            alterDisplayByJoystk(ssd, frame_area, vry_value);
         }
         
         npWrite(); // Escreve os dados nos LEDs.
