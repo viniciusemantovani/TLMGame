@@ -60,7 +60,7 @@ uint8_t cor_led_9_verify = 0;
 
 int16_t resultado_correto; // Resultado correto do cálculo.
 
-int16_t alg[2]; // algarismos da resposta do jogador.
+int8_t alg[5]; // algarismos da resposta do jogador.
 
 uint8_t which_digit; // Armazena o número do dígito que está sendo editado pelo jogador no momento.
 
@@ -292,7 +292,10 @@ void alfabetoNum(int16_t num){
         
         npWrite();
         npClear();
-        sleep_ms(1000);
+        sleep_ms(500);
+        npWrite();
+        sleep_ms(500);
+
     }
 }
 
@@ -308,29 +311,53 @@ int32_t geraAbs(){
 /**
  * @brief Gera uma conta aleatória para o jogo de matemática.
  */
-int16_t geraConta(){
+int16_t geraConta(uint8_t fase_atual){
 
     uint16_t op = geraAbs()%4; // Operação
 
     uint16_t p2; // Operante    
     uint16_t p1; // Operado
 
-    if(op + 32760 == 32761){
-        p2 = 1 + geraAbs()%9; // Impede que o divisor seja 0.
-        p1 = geraAbs()%10;
+    uint16_t max_int;
 
+        // Divisão:
+    if(op + 32760 == 32761){
+
+        if(fase_atual <= 180) max_int = fase_atual + 9; 
+        else max_int = 180;
+
+        p2 = 1 + geraAbs()%(max_int - 1); // Impede que o divisor seja 0.
+        p1 = geraAbs()%(max_int);
         p1 = p1*p2; // Garante divisão inteira.
 
+        // Subtração:
     } else if(op + 32760 == 32763){
-        p2 = geraAbs()%10;
-        
+
+        if(fase_atual*2 + 9 < 32760) max_int = fase_atual*2 + 9; 
+        else max_int = 32759;
+
+        p2 = geraAbs()%(max_int);
+    
         do{ // Impede resultado negativo.
-            p1 = geraAbs()%10;
+            p1 = geraAbs()%(max_int);
         } while(p1 < p2);
 
+        // Multiplicação:
+    } else if(op + 32760 == 32760){
+        if(fase_atual + 9 <= 180) max_int = fase_atual + 9;
+        else max_int = 180;
+
+        p2 = geraAbs()%(max_int);
+        p1 = geraAbs()%(max_int);
+
+        // Soma:
     } else{
-        p2 = geraAbs()%10;
-        p1 = geraAbs()%10;
+        if(fase_atual*4 + 18 < 32760) max_int = fase_atual*2 + 9;
+        else max_int = 32759;
+
+        p2 = geraAbs()%(max_int);
+        p1 = geraAbs()%(max_int);
+
     }
 
     alfabetoNum(p1);
@@ -445,8 +472,8 @@ bool verifyVictoryLogic(){
  * @brief Verifica se o jogador venceu uma rodada de matemática.
  */
 bool verifyVictoryMath(){
-
-    if(10*alg[0] + alg[1] == resultado_correto) return true;
+    printf("%d\n", 10000*alg[0] + 1000*alg[1] + 100*alg[2] + 10*alg[3] + alg[4]);
+    if(10000*alg[0] + 1000*alg[1] + 100*alg[2] + 10*alg[3] + alg[4] == resultado_correto) return true;
     else return false;
 }
 
@@ -458,7 +485,7 @@ bool btnARepeatMath(struct repeating_timer *t){
     if(!gpio_get(BUTTON_A) && absolute_time_diff_us(click_time_A, get_absolute_time()) > 200000){
         click_time_A = get_absolute_time();
         which_digit++;
-        if(which_digit > 1){
+        if(which_digit > 4){
             which_digit = 0;
             vitoria = verifyVictoryMath();
             new_fase = true;
@@ -476,7 +503,7 @@ bool btnBRepeatMath(struct repeating_timer *t){
     
     if(!gpio_get(BUTTON_B) && absolute_time_diff_us(click_time_B, get_absolute_time()) > 200000){
         click_time_B = get_absolute_time();
-        if(which_digit == 1) which_digit--;
+        if(which_digit > 0) which_digit--;
     }
 
     return true;
@@ -895,7 +922,10 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
     new_fase = true;
     vitoria = true;
     alg[0] = 0;
-    alg[1] = 1;
+    alg[1] = 0;
+    alg[2] = 0;
+    alg[3] = 0;
+    alg[4] = 0;
 }
 
 /**
@@ -951,7 +981,7 @@ void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area, uint8_t fa
     char str[17];
     char str_fase[17];
     sprintf(str_fase, "    Fase %.2d    ", fase_atual);
-    sprintf(str, "       %d%d    ", alg[0], alg[1]);
+    sprintf(str, "     %d%d%d%d%d     ", alg[0], alg[1], alg[2], alg[3], alg[4]);
 
     organizeStrings(str_fase, "                ", str, ssd, frame_area);
 }
@@ -1017,6 +1047,7 @@ int main(){
     struct repeating_timer timer_A; // Timer para controle do botão A.
     struct repeating_timer timer_B; // Timer para controle do botão B.
 
+    bool restarted_math = false; // Indica se houve derrota no jogo de matemática para previnir escrita indevida no display.
     while(true){
 
         joystick_read_axis(&vrx_value, &vry_value); // Lê valores do joystick (0-4095)
@@ -1077,15 +1108,24 @@ int main(){
                     play_tone(BUZZER_PIN_B, 400, 200); // Som de início de fase
                     vitoria = false;
                     new_fase = false;
-                    resultado_correto = geraConta();
+                    resultado_correto = geraConta(fase_atual);
+                    printf("resultado correto: %d", resultado_correto);
                     alg[0] = 0;
                     alg[1] = 0;
+                    alg[2] = 0;
+                    alg[3] = 0;
+                    alg[4] = 0;
                     showDigitsOnDisplay(ssd, frame_area, fase_atual);
                 } else{
                     restartFromScratch(&fase_atual, ssd, frame_area);
+                    restarted_math = true;
                 }
             }
-            alterDisplayByJoystk(ssd, frame_area, vry_value, fase_atual);
+            if(!restarted_math) alterDisplayByJoystk(ssd, frame_area, vry_value, fase_atual);
+            else{
+                restarted_math = false;
+                organizeStrings("                ", "                ", "                ", ssd, frame_area); // Limpa o display.
+            }
         }
         
         npWrite(); // Escreve os dados nos LEDs.
