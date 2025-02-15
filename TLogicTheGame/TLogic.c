@@ -323,12 +323,13 @@ int16_t geraConta(uint8_t fase_atual){
         // Divisão:
     if(op + 32760 == 32761){
 
-        if(fase_atual <= 180) max_int = fase_atual + 9; 
-        else max_int = 180;
-
-        p2 = 1 + geraAbs()%(max_int - 1); // Impede que o divisor seja 0.
-        p1 = geraAbs()%(max_int);
-        p1 = p1*p2; // Garante divisão inteira.
+        if(fase_atual + 9 < 32760) max_int = fase_atual + 9;
+        else max_int = 32759;
+        do{
+            p2 = 1 + geraAbs()%(max_int - 1); // Impede que o divisor seja 0.
+            p1 = geraAbs()%(max_int);
+            p1 = p1*p2; // Garante divisão inteira.
+        } while(p1*p2 >= 32760); // Garante resultado que caiba em int16
 
         // Subtração:
     } else if(op + 32760 == 32763){
@@ -344,33 +345,36 @@ int16_t geraConta(uint8_t fase_atual){
 
         // Multiplicação:
     } else if(op + 32760 == 32760){
-        if(fase_atual + 9 <= 180) max_int = fase_atual + 9;
-        else max_int = 180;
+        if(fase_atual + 9 < 32760) max_int = fase_atual + 9;
+        else max_int = 32759;
 
-        p2 = geraAbs()%(max_int);
-        p1 = geraAbs()%(max_int);
+        do{ 
+            p2 = geraAbs()%(max_int);
+            p1 = geraAbs()%(max_int);
+        } while(p1*p2 >= 32760); // Garante resultado que caiba em int16
 
         // Soma:
     } else{
-        if(fase_atual*4 + 18 < 32760) max_int = fase_atual*2 + 9;
+        if(fase_atual*2 + 9 < 32760) max_int = fase_atual*2 + 9;
         else max_int = 32759;
 
-        p2 = geraAbs()%(max_int);
-        p1 = geraAbs()%(max_int);
-
+        do{ // Garante resultado que caiba em int16
+            p2 = geraAbs()%(max_int);
+            p1 = geraAbs()%(max_int);
+        } while(p2 + p1 >= 32760); // Garante resultado que caiba em int16
     }
 
     alfabetoNum(p1);
-    sleep_ms(1000);
+    sleep_ms(500);
     npClear();
 
     alfabetoNum(op + 32760);
-    sleep_ms(1000);
+    sleep_ms(500);
     npClear();
 
     alfabetoNum(p2);
     npClear();
-    sleep_ms(1000);
+    sleep_ms(500);
     npWrite();
 
     switch(op + 32760){
@@ -744,7 +748,7 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
         // Escreve fase atual no display:
     char fase_str[17];
 
-    sprintf(fase_str, "       %.2d        ", fase_atual);
+    sprintf(fase_str, "       %d        ", fase_atual);
 
     // Mensagem de jogo:
     organizeStrings("   fase atual   ", "                ", fase_str, ssd, frame_area);
@@ -980,7 +984,7 @@ void generalInit(){
 void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area, uint8_t fase_atual){
     char str[17];
     char str_fase[17];
-    sprintf(str_fase, "    Fase %.2d    ", fase_atual);
+    sprintf(str_fase, "    Fase %d    ", fase_atual);
     sprintf(str, "     %d%d%d%d%d     ", alg[0], alg[1], alg[2], alg[3], alg[4]);
 
     organizeStrings(str_fase, "                ", str, ssd, frame_area);
@@ -1119,6 +1123,7 @@ int main(){
                 } else{
                     restartFromScratch(&fase_atual, ssd, frame_area);
                     restarted_math = true;
+                    which_digit = 0;
                 }
             }
             if(!restarted_math) alterDisplayByJoystk(ssd, frame_area, vry_value, fase_atual);
