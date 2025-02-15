@@ -32,6 +32,8 @@ bool game; // true - lógica pura, false - lógica matemática;
 bool new_fase = true; // Determina se uma nova fase deve ser iniciada ou não.
 bool vitoria = true; // Determina se uma fase foi vencida ou perdida.
 
+bool fst_logic; // Indica se é o jogo de logica está sendo iniciado pela primeira vez ou após o outro jogo.
+bool fst_math; // Indica se é o jogo de matemática está sendo iniciado pela primeira vez ou após o outro jogo.
 //---------------------------------------------------------------------------------------------------------------
 
     // Variáveis globais para jogo de lógica:
@@ -413,7 +415,9 @@ uint8_t movCursor(uint8_t posicao_atual, uint8_t cor_atual, uint16_t x, uint16_t
  */
 bool btnARepeatLogic(struct repeating_timer *t){
     static absolute_time_t click_time_A = 0;
-    
+    static int count = 0;
+    printf("entra %d\n", count);
+    count++;
     if(!gpio_get(BUTTON_A) && absolute_time_diff_us(click_time_A, get_absolute_time()) > 200000){
         click_time_A = get_absolute_time();
         cor_atual++;
@@ -741,7 +745,7 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
 void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
 
     // Mensagem de welcoming:
-    organizeStrings(" Bem vindo ao   ", "                ", "    TLogic!     ", ssd, frame_area);
+    organizeStrings(" Bem vindo ao   ", "                ", "     TGame      ", ssd, frame_area);
 
     // Som de welcoming:
     play_tone(BUZZER_PIN_A, 300, 200);
@@ -752,13 +756,14 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     // Escolha do jogo:
     organizeStrings(" Aperte A para  ", "  TLogic ou B   ", "  para TMath    ", ssd, frame_area);
 
-    while(gpio_get(BUTTON_A) && gpio_get(BUTTON_B)){
-        if(!gpio_get(BUTTON_A)){
-            game = true;
-        } else if(!gpio_get(BUTTON_B)){
-            game = false;
-        }
-    };
+    while(gpio_get(BUTTON_A) && gpio_get(BUTTON_B));
+    if(!gpio_get(BUTTON_A)){
+        game = true;
+    } else if(!gpio_get(BUTTON_B)){
+        game = false;
+    }
+
+
     sleep_ms(500);
     play_tone(BUZZER_PIN_A, 300, 200);
 
@@ -940,12 +945,15 @@ void generalInit(){
  * @brief Apresenta os valores atuais dos dígitos no display.
  * @param ssd dados do display
  * @param frame_area area do display
+ * @param fase_atual fase atual do jogo
 */
-void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area){
+void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area, uint8_t fase_atual){
     char str[17];
-    sprintf(str, "       %d%d      ", alg[0], alg[1]);
+    char str_fase[17];
+    sprintf(str_fase, "    Fase %.2d    ", fase_atual);
+    sprintf(str, "       %d%d    ", alg[0], alg[1]);
 
-    organizeStrings("                ", str, "                ", ssd, frame_area);
+    organizeStrings(str_fase, "                ", str, ssd, frame_area);
 }
 
 /**
@@ -953,19 +961,19 @@ void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area){
  * @param ssd dados do display
  * @param frame_area area do display
  * @param vry representa o movimento do joystick no eixo y (0-4095)
+ * @param fase_atual fase atual do jogo
  */
-void alterDisplayByJoystk(uint8_t *ssd, struct render_area frame_area, uint16_t vry){
+void alterDisplayByJoystk(uint8_t *ssd, struct render_area frame_area, uint16_t vry, uint8_t fase_atual){
     if(vry > 2047 + 1000 && alg[which_digit] < 9){
         alg[which_digit] += 1;
     }if(vry < 2047 - 1000 && alg[which_digit] > 0){
         alg[which_digit] -= 1;
     }
-    showDigitsOnDisplay(ssd, frame_area);
+    showDigitsOnDisplay(ssd, frame_area, fase_atual);
 }
 
 int main(){
 
-    game = false; //seta o jogo como o de logica pura.
     uint8_t fase_atual = 0; // Define a fase em que o jogador se encontra (Não tem relação com nível de dificuldade).
 
         // Inicializacao geral:
@@ -977,6 +985,9 @@ int main(){
     cor_atual = 1; // Inicia em azul.
 
     char fase_str[17]; // Armazena a fase atual em string.
+
+    fst_logic = true;
+    fst_math = true;
 
     //-------------------------------------------------------------------------
 
@@ -999,40 +1010,12 @@ int main(){
     clearDisplay(ssd, frame_area);
 
     mensagensInicio(ssd, frame_area); // Printa no display as mensagens de início.
-    //-------------------------------------------------------------------------
-
-        // Configurações finais pré-jogo:
-
-    // Jogo de lógica:
-    if(game){
-
-        // Acende cursor em azul:
-        npSetLED(posicao_atual, 0, 0, 200);
-
-        // Inicializa timers para verificação de botões:
-        struct repeating_timer timer_A; // Timer para controle do botão A.
-        add_repeating_timer_ms(100, btnARepeatLogic, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
-
-        struct repeating_timer timer_B; // Timer para controle do botão B.
-        add_repeating_timer_ms(100, btnBRepeatLogic, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
-
-    // Jogo de matemática:
-    } else{
-
-        // Inicializa timers para verificação de botões:
-        struct repeating_timer timer_A; // Timer para controle do botão A.
-        add_repeating_timer_ms(100, btnARepeatMath, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
-
-        struct repeating_timer timer_B; // Timer para controle do botão B.
-        add_repeating_timer_ms(100, btnBRepeatMath, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
-
-        //Limpa display:
-        organizeStrings("                ", "                ", "                ", ssd, frame_area);
-    }
 
     //-------------------------------------------------------------------------
 
     which_digit = 0;
+    struct repeating_timer timer_A; // Timer para controle do botão A.
+    struct repeating_timer timer_B; // Timer para controle do botão B.
 
     while(true){
 
@@ -1040,6 +1023,22 @@ int main(){
 
         // Jogo de lógica pura:
         if(game){
+            bool restart = false; // Garante que o cursor não acende no reinício, para não conflitar com possível mudança de jogo.
+            if(fst_logic){
+                fst_logic = false;
+                fst_math = true;
+
+                npClear();
+
+                // Acende cursor em azul:
+                npSetLED(posicao_atual, 0, 0, 200);
+
+                // Inicializa timers para verificação de botões:
+                add_repeating_timer_ms(100, btnARepeatLogic, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
+                add_repeating_timer_ms(100, btnBRepeatLogic, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
+                sleep_ms(100);
+
+            }
             if(new_fase){ // Verifica se está-se iniciando uma nova fase.
                 sleep_ms(100);
                 if(vitoria){ // Verifica se o jogador passou de fase.
@@ -1050,6 +1049,7 @@ int main(){
                     new_fase = false;
                 } else{
                     restartFromScratch(&fase_atual, ssd, frame_area);
+                    npClear();
                 }
             }
             posicao_atual = movCursor(posicao_atual, cor_atual, vrx_value, vry_value); // Determina nova posição do cursor.
@@ -1057,7 +1057,18 @@ int main(){
         
         // Jogo de matemática:
         else{
+            if(fst_math){
+                fst_logic = true;
+                fst_math = false;
 
+                // Inicializa timers para verificação de botões:
+                add_repeating_timer_ms(100, btnARepeatMath, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
+                add_repeating_timer_ms(100, btnBRepeatMath, NULL, &timer_B); // Inicializa temporizador para controle do botão B.
+
+                //Limpa display:
+                organizeStrings("                ", "                ", "                ", ssd, frame_area);
+                sleep_ms(100);
+            }
             if(new_fase){
                 sleep_ms(100);
                 if(vitoria){
@@ -1069,12 +1080,12 @@ int main(){
                     resultado_correto = geraConta();
                     alg[0] = 0;
                     alg[1] = 0;
-                    showDigitsOnDisplay(ssd, frame_area);
+                    showDigitsOnDisplay(ssd, frame_area, fase_atual);
                 } else{
                     restartFromScratch(&fase_atual, ssd, frame_area);
                 }
             }
-            alterDisplayByJoystk(ssd, frame_area, vry_value);
+            alterDisplayByJoystk(ssd, frame_area, vry_value, fase_atual);
         }
         
         npWrite(); // Escreve os dados nos LEDs.
