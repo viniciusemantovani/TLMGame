@@ -34,6 +34,8 @@ bool vitoria = true; // Determina se uma fase foi vencida ou perdida.
 
 bool fst_logic; // Indica se é o jogo de logica está sendo iniciado pela primeira vez ou após o outro jogo.
 bool fst_math; // Indica se é o jogo de matemática está sendo iniciado pela primeira vez ou após o outro jogo.
+
+bool com_som; // Indica se o jogador deseja jogar com som ou não.
 //---------------------------------------------------------------------------------------------------------------
 
     // Variáveis globais para jogo de lógica:
@@ -741,7 +743,9 @@ void determinaMap(){
  */
 void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area){
     
-    play_tone(BUZZER_PIN_B, 400, 200); // Som de início de fase
+    if(com_som){
+        play_tone(BUZZER_PIN_B, 400, 200); // Som de início de fase
+    }
 
     //-------------------------------------------------------------------------
 
@@ -775,14 +779,31 @@ void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area)
  */
 void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
 
+    bool pula_tutorial = false; // Define se o jogador quer ou não pular o tutorial do jogo.
+
     // Mensagem de welcoming:
-    organizeStrings(" Bem vindo ao   ", "                ", "     TGame      ", ssd, frame_area);
+    organizeStrings(" Bem vindo ao   ", "                ", "     TGame!     ", ssd, frame_area);
 
     // Som de welcoming:
-    play_tone(BUZZER_PIN_A, 300, 200);
+    play_tone(BUZZER_PIN_A, 636, 200);
     sleep_ms(100);
-    play_tone(BUZZER_PIN_A, 300, 200);
+    play_tone(BUZZER_PIN_A, 636, 200);
     sleep_ms(1000);
+
+    // Escolha sobre som:
+    organizeStrings(" Aperte A para ", " Jogar com som  ", " e B para mudo  ", ssd, frame_area);
+
+    while(gpio_get(BUTTON_A) && gpio_get(BUTTON_B));
+    if(!gpio_get(BUTTON_A)){
+        com_som = true;
+    } else if(!gpio_get(BUTTON_B)){
+        com_som = false;
+    }
+
+    sleep_ms(500);
+    if(com_som){
+        play_tone(BUZZER_PIN_A, 636, 200);
+    }
 
     // Escolha do jogo:
     organizeStrings(" Aperte A para  ", "  TLogic ou B   ", "  para TMath    ", ssd, frame_area);
@@ -794,84 +815,191 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
         game = false;
     }
 
-
     sleep_ms(500);
-    play_tone(BUZZER_PIN_A, 300, 200);
-
-    // Mensagem introdutória:
-    organizeStrings("  Pressione A   ", "para prosseguir ", "  a cada etapa  ", ssd, frame_area);
-
-    // Aguarda pressionamento do botão A.
-    while(gpio_get(BUTTON_A));
-    sleep_ms(500);
-    play_tone(BUZZER_PIN_A, 300, 200);
-
-    // Jogo de lógica pura:
-    if(game){ 
-        
-        // Mensagem tutorial 1:
-        organizeStrings(" O jogador deve ", "    repetir     ", "  a logica dos  ", ssd, frame_area);
-
-        // Aguarda pressionamento do botão A.
-        while(gpio_get(BUTTON_A));
-        sleep_ms(500);
-        play_tone(BUZZER_PIN_A, 300, 200);
-
-        // Mensagem tutorial 2:
-        organizeStrings("quadros de cima ", "  nos quadros   ", "   de baixo     ", ssd, frame_area);
-
-        // Aguarda pressionamento do botão A.
-        while(gpio_get(BUTTON_A));
-        sleep_ms(500);
-        play_tone(BUZZER_PIN_A, 300, 200);
-
-        // Mensagem tutorial 3:
-        organizeStrings("  A troca cor   ", "                ", "  B define cor  ", ssd, frame_area);
-
-        // Aguarda pressionamento do botão A.
-        while(gpio_get(BUTTON_A));
-        sleep_ms(500);
-        play_tone(BUZZER_PIN_A, 300, 200);
-
-        // Mensagem tutorial 4:
-        organizeStrings("JS move cursor  ", "e pressionado   ", "confirma cores  ", ssd, frame_area);
-
-        // Aguarda pressionamento do botão A para começar jogo.
-        while(gpio_get(BUTTON_A));
-        sleep_ms(500);
-
+    if(com_som){
+        play_tone(BUZZER_PIN_A, 636, 200);        
     }
 
-    // Jogo de lógica matemática:
-    else{
-        // Mensagem tutorial 1:
-        organizeStrings(" O jogador deve ", "  executar os   ", "    calculos    ", ssd, frame_area);
+    // Pula tutorial ou não:
+    organizeStrings(" Aperte A para  ", " ver o tutorial ", "ou B para pular ", ssd, frame_area);
+
+    while(gpio_get(BUTTON_A) && gpio_get(BUTTON_B));
+    if(!gpio_get(BUTTON_A)){
+        pula_tutorial = false;
+    } else if(!gpio_get(BUTTON_B)){
+        pula_tutorial = true;
+    }
+
+    sleep_ms(500);
+    if(com_som){
+        play_tone(BUZZER_PIN_A, 636, 200);        
+    }
+
+    // Caso o jogador não queira pular o tutorial:
+
+    if(!pula_tutorial){
+    // Mensagem introdutória:
+        organizeStrings("  Pressione A   ", "para prosseguir ", "  a cada etapa  ", ssd, frame_area);
 
         // Aguarda pressionamento do botão A.
         while(gpio_get(BUTTON_A));
         sleep_ms(500);
-        play_tone(BUZZER_PIN_A, 300, 200);
+        if(com_som){
+            play_tone(BUZZER_PIN_A, 636, 200);
+        }
 
-        // Mensagem tutorial 2:
-        organizeStrings("  A confirma    ", " um algarismo   ", " B desconfirma  ", ssd, frame_area);
+        // Jogo de lógica pura:
+        if(game){ 
+            
+            // Mensagem tutorial 1:
+            organizeStrings(" O jogador deve ", "    repetir     ", "  a logica dos  ", ssd, frame_area);
 
-        // Aguarda pressionamento do botão A.
-        while(gpio_get(BUTTON_A));
-        sleep_ms(500);
-        play_tone(BUZZER_PIN_A, 300, 200);
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
 
-        // Mensagem tutorial 3:
-        organizeStrings("  JS aumenta e  ", "   diminui um   ", "   algarismo    ", ssd, frame_area);
+            // Mensagem tutorial 2:
+            organizeStrings("quadros de cima ", "  nos quadros   ", "   de baixo     ", ssd, frame_area);
 
-        // Aguarda pressionamento do botão A para começar jogo.
-        while(gpio_get(BUTTON_A));
-        sleep_ms(500);
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+            // Mensagem tutorial 3:
+            organizeStrings(" Pode ocorrer:  ", "90 ou 180 graus ", "  de giro ou    ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial 4:
+            organizeStrings("   troca das    ", "    cores do    ", "primeiro para o ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+        
+            // Mensagem tutorial 4:
+            organizeStrings(" segundo quadro ", "    de cima     ", "                ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial 5:
+            organizeStrings("      Mas,      ", "  fique atento!  ", " um giro e uma  ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial 6:
+            organizeStrings(" troca de cores ", "nunca acontecem ", "     juntos     ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial 3:
+            organizeStrings(" A: troca cor   ", "                ", " B: define cor  ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial 4:
+            organizeStrings("JS: move cursor ", " e pressionado  ", "confirma cores  ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A para começar jogo.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+
+        }
+
+        // Jogo de lógica matemática:
+        else{
+            // Mensagem tutorial 1:
+            organizeStrings(" O jogador deve ", "  executar as   ", "     contas     ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial 2:
+            organizeStrings("  A: confirma   ", " um algarismo   ", " B: desconfirma ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial 3:
+            organizeStrings(" JS: aumenta e  ", "   diminui um   ", "   algarismo    ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial final 1:
+            organizeStrings(" FIQUE ATENTO!  ", "  observe bem a ", " conta nos LEDs ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+
+            // Mensagem tutorial final 2:
+            organizeStrings("    pois ela    ", "aparece somente ", "    uma vez!    ", ssd, frame_area);
+
+            // Aguarda pressionamento do botão A para começar jogo.
+            while(gpio_get(BUTTON_A));
+            sleep_ms(500);
+            if(com_som){
+                play_tone(BUZZER_PIN_A, 636, 200);
+            }
+            sleep_ms(1000);
+        }
     }
 
     // Som de início de Jogo:
-    play_tone(BUZZER_PIN_B, 450, 200);
-    sleep_ms(100);
-    play_tone(BUZZER_PIN_B, 450, 200);
+    if(com_som){
+        play_tone(BUZZER_PIN_B, 660, 200);
+        sleep_ms(100);
+        play_tone(BUZZER_PIN_B, 660, 200);
+    }
     sleep_ms(1000);
 }
 
@@ -908,10 +1036,12 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
     organizeStrings("RESPOSTA ERRADA ", "                ", "TENTE NOVAMENTE ", ssd, frame_area);
     
     // Toca som de derrota:
-    play_tone(BUZZER_PIN_B, 420, 100);
-    play_tone(BUZZER_PIN_B, 410, 100);
-    play_tone(BUZZER_PIN_B, 400, 100);
-    play_tone(BUZZER_PIN_B, 390, 400);
+    if(com_som){
+        play_tone(BUZZER_PIN_B, 667, 100);
+        play_tone(BUZZER_PIN_B, 657, 100);
+        play_tone(BUZZER_PIN_B, 647, 100);
+        play_tone(BUZZER_PIN_B, 637, 400);
+    }
 
     sleep_ms(500);
 
@@ -942,9 +1072,11 @@ void apresentaVitoria(uint8_t *ssd, struct render_area frame_area){
     organizeStrings("   MUITO BEM    ", "    CORRETO     ", " CONTINUE ASSIM ", ssd, frame_area);
 
     // Toca som de vitória:
-    play_tone(BUZZER_PIN_B, 400, 100);
-    play_tone(BUZZER_PIN_B, 420, 100);
-    play_tone(BUZZER_PIN_B, 450, 400);
+    if(com_som){
+        play_tone(BUZZER_PIN_B, 647, 100);
+        play_tone(BUZZER_PIN_B, 637, 100);
+        play_tone(BUZZER_PIN_B, 677, 400);
+    }
 
     sleep_ms(500);
 }
@@ -1109,7 +1241,9 @@ int main(){
                 if(vitoria){
                     fase_atual++;
                     if(fase_atual > 1) apresentaVitoria(ssd, frame_area);
-                    play_tone(BUZZER_PIN_B, 400, 200); // Som de início de fase
+                    if(com_som){
+                        play_tone(BUZZER_PIN_B, 400, 200); // Som de início de fase
+                    }
                     vitoria = false;
                     new_fase = false;
                     resultado_correto = geraConta(fase_atual);

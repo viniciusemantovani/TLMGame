@@ -1,5 +1,6 @@
 //FROM https://github.com/BitDogLab/BitDogLab-C/blob/main/display_oled/inc/ssd1306_i2c.c.
-// Edited (new functions called "i2cInitDisplay", "clearDisplay")
+// Alterado (novas funções: "i2cInitDisplay", "clearDisplay")
+// Alterado para adicionar letras minúsculas, ":", "," e "!".
 
 #include <stdio.h>
 #include <string.h>
@@ -136,13 +137,25 @@ void ssd1306_draw_line(uint8_t *ssd, int x_0, int y_0, int x_1, int y_1, bool se
 }
 
 // Adquire os pixels para um caractere (de acordo com ssd1306_font.h)
-inline int ssd1306_get_font(uint8_t character)
+int ssd1306_get_font(uint8_t character)
 {
   if (character >= 'A' && character <= 'Z') {
     return character - 'A' + 1;
   }
   else if (character >= '0' && character <= '9') {
     return character - '0' + 27;
+  }
+  else if (character == ':'){
+    return character - ':' + 37;
+  }
+  else if (character >= 'a' && character <= 'z'){
+    return character - 'a' + 38;
+  }
+  else if (character == ','){
+    return character - ',' + 39 + 'z' - 'a';
+  }
+  else if (character == '!'){
+    return character - '!' + 40 + 'z' - 'a';
   }
   else
     return 0;
@@ -156,7 +169,6 @@ void ssd1306_draw_char(uint8_t *ssd, int16_t x, int16_t y, uint8_t character) {
 
     y = y / 8;
 
-    character = toupper(character);
     int idx = ssd1306_get_font(character);
     int fb_idx = y * 128 + x;
 
