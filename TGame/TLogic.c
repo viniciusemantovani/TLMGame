@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "pico/stdlib.h"
-#include "pico/cyw43_arch.h"
 #include "pico/binary_info.h"
 #include "pico/rand.h"
 #include "hardware/pwm.h"
@@ -910,7 +909,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
             }
 
             // Mensagem tutorial 6:
-            organizeStrings(" troca de cores ", "nunca acontecem ", "     juntos     ", ssd, frame_area);
+            organizeStrings(" troca de cores ", "nunca acontecem ", "     juntos!    ", ssd, frame_area);
 
             // Aguarda pressionamento do botão A.
             while(gpio_get(BUTTON_A));
@@ -930,7 +929,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
             }
 
             // Mensagem tutorial 4:
-            organizeStrings("JS: move cursor ", "e, pressionado, ", "confirma cores- ", ssd, frame_area);
+            organizeStrings("JS: move cursor ", "e, pressionado, ", "confirma cores ", ssd, frame_area);
 
             // Aguarda pressionamento do botão A para começar jogo.
             while(gpio_get(BUTTON_A));
@@ -1025,7 +1024,7 @@ void desenhaX(){
  * @param ssd dados do display
  * @param frame_area area do display
  */
-void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area frame_area){
+void restartFromScratch(uint16_t *fase_atual, uint8_t *ssd, struct render_area frame_area){
     
     //Desenha X indicando derrota:
     desenhaX();

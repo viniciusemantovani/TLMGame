@@ -60,7 +60,6 @@ target_include_directories(TLogic PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(TLogic 
-        pico_cyw43_arch_lwip_threadsafe_background
         hardware_pio
         hardware_clocks
         hardware_i2c
