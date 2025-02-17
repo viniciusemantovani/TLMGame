@@ -313,7 +313,7 @@ int32_t geraAbs(){
 /**
  * @brief Gera uma conta aleatória para o jogo de matemática.
  */
-int16_t geraConta(uint8_t fase_atual){
+int16_t geraConta(uint16_t fase_atual){
 
     uint16_t op = geraAbs()%4; // Operação
 
@@ -492,7 +492,6 @@ bool btnARepeatMath(struct repeating_timer *t){
         click_time_A = get_absolute_time();
         which_digit++;
         if(which_digit > 4){
-            which_digit = 0;
             vitoria = verifyVictoryMath();
             new_fase = true;
         }
@@ -741,7 +740,7 @@ void determinaMap(){
 /**
  * @brief Inicia uma nova fase.
  */
-void inicioFase(uint8_t fase_atual, uint8_t *ssd, struct render_area frame_area){
+void inicioFase(uint16_t fase_atual, uint8_t *ssd, struct render_area frame_area){
     
     if(com_som){
         play_tone(BUZZER_PIN_B, 400, 200); // Som de início de fase
@@ -931,7 +930,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
             }
 
             // Mensagem tutorial 4:
-            organizeStrings("JS: move cursor ", " e pressionado  ", "confirma cores  ", ssd, frame_area);
+            organizeStrings("JS: move cursor ", "e, pressionado, ", "confirma cores- ", ssd, frame_area);
 
             // Aguarda pressionamento do botão A para começar jogo.
             while(gpio_get(BUTTON_A));
@@ -1033,8 +1032,11 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
     npWrite();
 
     // Escreve mensagem de derrota no display:
-    organizeStrings("RESPOSTA ERRADA ", "                ", "TENTE NOVAMENTE ", ssd, frame_area);
-    
+    char str_resultado[17];
+    sprintf(str_resultado, "   Correto: %d  ", resultado_correto);
+    organizeStrings("RESPOSTA ERRADA ", str_resultado, "TENTE NOVAMENTE ", ssd, frame_area);
+    sleep_ms(1000); 
+
     // Toca som de derrota:
     if(com_som){
         play_tone(BUZZER_PIN_B, 667, 100);
@@ -1042,8 +1044,6 @@ void restartFromScratch(uint8_t *fase_atual, uint8_t *ssd, struct render_area fr
         play_tone(BUZZER_PIN_B, 647, 100);
         play_tone(BUZZER_PIN_B, 637, 400);
     }
-
-    sleep_ms(500);
 
     // Reseta o mapa:
     for(uint8_t i = 0; i < 25; i++){
@@ -1113,13 +1113,27 @@ void generalInit(){
  * @param frame_area area do display
  * @param fase_atual fase atual do jogo
 */
-void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area, uint8_t fase_atual){
+void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area, uint16_t fase_atual){
     char str[17];
     char str_fase[17];
     sprintf(str_fase, "    Fase %d    ", fase_atual);
-    sprintf(str, "     %d%d%d%d%d     ", alg[0], alg[1], alg[2], alg[3], alg[4]);
+    sprintf(str, "     %d%d%d%d%d       ", alg[0], alg[1], alg[2], alg[3], alg[4]);
 
-    organizeStrings(str_fase, "                ", str, ssd, frame_area);
+    switch(which_digit){
+        case 0: organizeStrings(str_fase, str, "     -         ", ssd, frame_area);
+                break;
+        case 1: organizeStrings(str_fase, str, "      -        ", ssd, frame_area);
+                break;
+        case 2: organizeStrings(str_fase, str, "       -       ", ssd, frame_area);
+                break;
+        case 3: organizeStrings(str_fase, str, "        -      ", ssd, frame_area);
+                break;
+        case 4: organizeStrings(str_fase, str, "         -     ", ssd, frame_area);
+                break;
+        case 5: organizeStrings(str_fase, str, "          -    ", ssd, frame_area);
+                break;
+
+    }
 }
 
 /**
@@ -1129,18 +1143,20 @@ void showDigitsOnDisplay(uint8_t *ssd, struct render_area frame_area, uint8_t fa
  * @param vry representa o movimento do joystick no eixo y (0-4095)
  * @param fase_atual fase atual do jogo
  */
-void alterDisplayByJoystk(uint8_t *ssd, struct render_area frame_area, uint16_t vry, uint8_t fase_atual){
-    if(vry > 2047 + 1000 && alg[which_digit] < 9){
-        alg[which_digit] += 1;
-    }if(vry < 2047 - 1000 && alg[which_digit] > 0){
-        alg[which_digit] -= 1;
+void alterDisplayByJoystk(uint8_t *ssd, struct render_area frame_area, uint16_t vry, uint16_t fase_atual){
+    if(vry > 2047 + 1000){
+        if(alg[which_digit] < 9) alg[which_digit] += 1;
+        else alg[which_digit] = 0;
+    } if(vry < 2047 - 1000){
+        if(alg[which_digit] > 0) alg[which_digit] -= 1;
+        else alg[which_digit] = 9;
     }
     showDigitsOnDisplay(ssd, frame_area, fase_atual);
 }
 
 int main(){
 
-    uint8_t fase_atual = 0; // Define a fase em que o jogador se encontra (Não tem relação com nível de dificuldade).
+    uint16_t fase_atual = 0; // Define a fase em que o jogador se encontra (Não tem relação com nível de dificuldade).
 
         // Inicializacao geral:
     
@@ -1247,23 +1263,26 @@ int main(){
                     vitoria = false;
                     new_fase = false;
                     resultado_correto = geraConta(fase_atual);
-                    printf("resultado correto: %d", resultado_correto);
+                    if(resultado_correto/10 == 0) which_digit = 4;
+                    else if(resultado_correto/100 == 0) which_digit = 3;
+                    else if(resultado_correto/1000 == 0) which_digit = 2;
+                    else if(resultado_correto/10000 == 0) which_digit = 1;
+                    else which_digit = 0;
                     alg[0] = 0;
                     alg[1] = 0;
                     alg[2] = 0;
                     alg[3] = 0;
                     alg[4] = 0;
                     showDigitsOnDisplay(ssd, frame_area, fase_atual);
-                } else{
+                } else{     
                     restartFromScratch(&fase_atual, ssd, frame_area);
                     restarted_math = true;
-                    which_digit = 0;
+                    which_digit = 0;          
                 }
             }
             if(!restarted_math) alterDisplayByJoystk(ssd, frame_area, vry_value, fase_atual);
             else{
                 restarted_math = false;
-                organizeStrings("                ", "                ", "                ", ssd, frame_area); // Limpa o display.
             }
         }
         

@@ -157,6 +157,9 @@ int ssd1306_get_font(uint8_t character)
   else if (character == '!'){
     return character - '!' + 40 + 'z' - 'a';
   }
+  else if(character == '-'){
+    return character - '-' + 41 + 'z' - 'a';
+  }
   else
     return 0;
 }
