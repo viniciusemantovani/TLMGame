@@ -315,12 +315,12 @@ int32_t geraAbs(){
  */
 int16_t geraConta(uint16_t fase_atual){
 
-    uint16_t op = geraAbs()%4; // Operação
+    int16_t op = geraAbs()%4; // Operação
 
-    uint16_t p2; // Operante    
-    uint16_t p1; // Operado
+    int16_t p2; // Operante    
+    int16_t p1; // Operado
 
-    uint16_t max_int;
+    int16_t max_int;
 
         // Divisão:
     if(op + 32760 == 32761){
