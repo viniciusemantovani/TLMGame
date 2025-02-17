@@ -780,7 +780,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     bool pula_tutorial = false; // Define se o jogador quer ou não pular o tutorial do jogo.
 
     // Mensagem de welcoming:
-    organizeStrings(" Bem vindo ao   ", "                ", "     TGame!     ", ssd, frame_area);
+    organizeStrings(" Bem vindo ao   ", "                ", "    TLMGame!    ", ssd, frame_area);
 
     // Som de welcoming:
     play_tone(BUZZER_PIN_A, 636, 200);
@@ -1033,8 +1033,8 @@ void restartFromScratch(uint16_t *fase_atual, uint8_t *ssd, struct render_area f
     // Escreve mensagem de derrota no display:
     char str_resultado[17];
     sprintf(str_resultado, "   Correto: %d  ", resultado_correto);
-    organizeStrings("RESPOSTA ERRADA ", str_resultado, "TENTE NOVAMENTE ", ssd, frame_area);
-    sleep_ms(1000); 
+    if(game = false) organizeStrings("RESPOSTA ERRADA ", str_resultado, "TENTE NOVAMENTE ", ssd, frame_area);
+    else organizeStrings("RESPOSTA ERRADA ", "                ", "TENTE NOVAMENTE ", ssd, frame_area);
 
     // Toca som de derrota:
     if(com_som){
@@ -1043,6 +1043,7 @@ void restartFromScratch(uint16_t *fase_atual, uint8_t *ssd, struct render_area f
         play_tone(BUZZER_PIN_B, 647, 100);
         play_tone(BUZZER_PIN_B, 637, 400);
     }
+    sleep_ms(1000); 
 
     // Reseta o mapa:
     for(uint8_t i = 0; i < 25; i++){
@@ -1059,6 +1060,7 @@ void restartFromScratch(uint16_t *fase_atual, uint8_t *ssd, struct render_area f
     alg[2] = 0;
     alg[3] = 0;
     alg[4] = 0;
+
 }
 
 /**
