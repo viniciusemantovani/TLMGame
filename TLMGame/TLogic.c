@@ -25,7 +25,7 @@ const uint8_t BUTTON_A = 5;
 const uint8_t BUTTON_B = 6;
 
 // Variável para escolha entre jogos:
-bool game; // true - lógica pura, false - lógica matemática;
+bool game; // true - lógica, false - lógica matemática;
 
 // Variáveis para controle dos jogos:
 bool new_fase = true; // Determina se uma nova fase deve ser iniciada ou não.
@@ -601,7 +601,7 @@ void geraConjuntoCor(uint8_t *led0, uint8_t *led1,uint8_t *led2, uint8_t *led3){
 }
 
 /**
- * @brief Determina e desenha o mapa de uma nova fase do jogo de lógica pura (aleatoriamente, seguindo parâmetros lógicos)
+ * @brief Determina e desenha o mapa de uma nova fase do jogo de lógica (aleatoriamente, seguindo parâmetros lógicos)
  */
 void determinaMap(){
 
@@ -804,7 +804,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
     }
 
     // Escolha do jogo:
-    organizeStrings(" Aperte A para  ", "  TLogic ou B   ", "  para TMath    ", ssd, frame_area);
+    organizeStrings(" Aperte A para  ", "  TLogicM ou B   ", "  para TLMath    ", ssd, frame_area);
 
     while(gpio_get(BUTTON_A) && gpio_get(BUTTON_B));
     if(!gpio_get(BUTTON_A)){
@@ -846,7 +846,7 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
             play_tone(BUZZER_PIN_A, 636, 200);
         }
 
-        // Jogo de lógica pura:
+        // Jogo de lógica:
         if(game){ 
             
             // Mensagem tutorial 1:
@@ -1203,7 +1203,7 @@ int main(){
 
         joystick_read_axis(&vrx_value, &vry_value); // Lê valores do joystick (0-4095)
 
-        // Jogo de lógica pura:
+        // Jogo de lógica:
         if(game){
             bool restart = false; // Garante que o cursor não acende no reinício, para não conflitar com possível mudança de jogo.
             if(fst_logic){
