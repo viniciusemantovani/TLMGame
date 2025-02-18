@@ -1,4 +1,5 @@
 // From https://github.com/BitDogLab/BitDogLab-C/blob/main/neopixel_pio/neopixel_pio.c.
+// Alterado ws2812b -> ws2812b.
 
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -7,7 +8,7 @@
 #include "neopixel.h"
 
 // Biblioteca gerada pelo arquivo .pio durante compilação.
-#include "ws2818b.pio.h"
+#include "ws2812b.pio.h"
 
 // Declaração do buffer de pixels que formam a matriz.
 npLED_t leds[LED_COUNT];
@@ -19,7 +20,7 @@ uint sm;
 void npInit(uint pin) {
 
   // Cria programa PIO.
-  uint offset = pio_add_program(pio0, &ws2818b_program);
+  uint offset = pio_add_program(pio0, &ws2812b_program);
   np_pio = pio0;
 
   // Toma posse de uma máquina PIO.
@@ -30,7 +31,7 @@ void npInit(uint pin) {
   }
 
   // Inicia programa na máquina PIO obtida.
-  ws2818b_program_init(np_pio, sm, offset, pin, 800000.f);
+  ws2812b_program_init(np_pio, sm, offset, pin, 800000.f);
 
   // Limpa buffer de pixels.
   for (uint i = 0; i < LED_COUNT; ++i) {

@@ -43,7 +43,7 @@ pico_set_program_name(TLogic "TLogic")
 pico_set_program_version(TLogic "0.1")
 
 # Generate PIO header
-pico_generate_pio_header(TLogic ${CMAKE_CURRENT_LIST_DIR}/libraries/ws2818b.pio)
+pico_generate_pio_header(TLogic ${CMAKE_CURRENT_LIST_DIR}/libraries/ws2812b.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(TLogic 0)
