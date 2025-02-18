@@ -1,5 +1,5 @@
 ; From https://github.com/BitDogLab/BitDogLab-C/blob/main/neopixel_pio/ws2818.pio.
-; Alterado ws2812b -> ws2812b.
+; Alterado ws2818b -> ws2812b.
 
 .program ws2812b
 .side_set 1

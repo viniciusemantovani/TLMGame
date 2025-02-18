@@ -1,5 +1,5 @@
 // From https://github.com/BitDogLab/BitDogLab-C/blob/main/neopixel_pio/neopixel_pio.c.
-// Alterado ws2812b -> ws2812b.
+// Alterado ws2818b -> ws2812b.
 
 #include <stdio.h>
 #include "pico/stdlib.h"

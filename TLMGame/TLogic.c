@@ -738,6 +738,9 @@ void determinaMap(){
 
 /**
  * @brief Inicia uma nova fase.
+ * @param fase_atual fase do jogo. É resetada nesta função
+ * @param ssd dados do display
+ * @param frame_area area do display
  */
 void inicioFase(uint16_t fase_atual, uint8_t *ssd, struct render_area frame_area){
     
