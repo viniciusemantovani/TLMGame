@@ -10,7 +10,7 @@
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
-#include "buzzer_pwm1.h"
+#include "buzzer_pwm.h"
 
 void pwm_init_buzzer(uint pin) {
     gpio_set_function(pin, GPIO_FUNC_PWM);

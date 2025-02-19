@@ -11,7 +11,7 @@
 #include "hardware/timer.h"
 #include "libraries/joystick.h"
 #include "libraries/neopixel.h"
-#include "libraries/buzzer_pwm1.h"
+#include "libraries/buzzer_pwm.h"
 #include "libraries/inc/ssd1306.h"
 
 //----------------------------------------------------------------------------------------------------------------
@@ -31,8 +31,7 @@ bool game; // true - lógica, false - lógica matemática;
 bool new_fase = true; // Determina se uma nova fase deve ser iniciada ou não.
 bool vitoria = true; // Determina se uma fase foi vencida ou perdida.
 
-bool fst_logic; // Indica se é o jogo de logica está sendo iniciado pela primeira vez ou após o outro jogo.
-bool fst_math; // Indica se é o jogo de matemática está sendo iniciado pela primeira vez ou após o outro jogo.
+bool fst_in_game; // Indica se um jogo está sendo iniciado pela primeira vez ou pela primeira vez após o outro ter sido o último e, qual é o jogo.
 
 bool com_som; // Indica se o jogador deseja jogar com som ou não.
 //---------------------------------------------------------------------------------------------------------------
@@ -811,9 +810,11 @@ void mensagensInicio(uint8_t *ssd, struct render_area frame_area){
 
     while(gpio_get(BUTTON_A) && gpio_get(BUTTON_B));
     if(!gpio_get(BUTTON_A)){
-        game = true;
+        game = true; // TLogicM
+        fst_in_game = true;
     } else if(!gpio_get(BUTTON_B)){
-        game = false;
+        game = false; // TLMath
+        fst_in_game = false;
     }
 
     sleep_ms(500);
@@ -1172,9 +1173,6 @@ int main(){
 
     char fase_str[17]; // Armazena a fase atual em string.
 
-    fst_logic = true;
-    fst_math = true;
-
     //-------------------------------------------------------------------------
 
         // Inicializacao do display:
@@ -1211,9 +1209,8 @@ int main(){
         // Jogo de lógica:
         if(game){
             bool restart = false; // Garante que o cursor não acende no reinício, para não conflitar com possível mudança de jogo.
-            if(fst_logic){
-                fst_logic = false;
-                fst_math = true;
+            if(fst_in_game){
+                fst_in_game = false;
 
                 npClear();
 
@@ -1234,7 +1231,7 @@ int main(){
                     inicioFase(fase_atual, ssd, frame_area); // Inicia nova fase.
                     vitoria = false;
                     new_fase = false;
-                } else{
+                } else{ // DERROTA:
                     restartFromScratch(&fase_atual, ssd, frame_area);
                     npClear();
                 }
@@ -1244,9 +1241,8 @@ int main(){
         
         // Jogo de matemática:
         else{
-            if(fst_math){
-                fst_logic = true;
-                fst_math = false;
+            if(!fst_in_game){
+                fst_in_game = true;
 
                 // Inicializa timers para verificação de botões:
                 add_repeating_timer_ms(100, btnARepeatMath, NULL, &timer_A); // Inicializa temporizador para controle do botão A.
@@ -1266,6 +1262,7 @@ int main(){
                     }
                     vitoria = false;
                     new_fase = false;
+                    //Parte do processo de começar com cursor no algarismo mais significativo a ser usado para resposta atual: 
                     resultado_correto = geraConta(fase_atual);
                     if(resultado_correto/10 == 0) which_digit = 4;
                     else if(resultado_correto/100 == 0) which_digit = 3;
@@ -1278,7 +1275,7 @@ int main(){
                     alg[3] = 0;
                     alg[4] = 0;
                     showDigitsOnDisplay(ssd, frame_area, fase_atual);
-                } else{     
+                } else{ // DERROTA:
                     restartFromScratch(&fase_atual, ssd, frame_area);
                     restarted_math = true;
                     which_digit = 0;          

@@ -1,5 +1,5 @@
-// Extending content from https://github.com/BitDogLab/BitDogLab-C/blob/main/Joystick_led/joystick.c
-// to use as a library.
+// criado para expandir https://github.com/BitDogLab/BitDogLab-C/blob/main/Joystick_led/joystick.c
+// e usar como biblioteca.
 
 #ifndef JOYSTICK_H
 #define JOYSTICK_H

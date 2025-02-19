@@ -28,38 +28,38 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(TLogic C CXX ASM)
+project(TLMGame C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(TLogic TLogic.c ${CMAKE_CURRENT_LIST_DIR}/libraries/neopixel.c
+add_executable(TLMGame TLMGame.c ${CMAKE_CURRENT_LIST_DIR}/libraries/neopixel.c
 ${CMAKE_CURRENT_LIST_DIR}/libraries/ssd1306_i2c.c ${CMAKE_CURRENT_LIST_DIR}/libraries/joystick.c
-${CMAKE_CURRENT_LIST_DIR}/libraries/buzzer_pwm1.c)
+${CMAKE_CURRENT_LIST_DIR}/libraries/buzzer_pwm.c)
 
-pico_set_program_name(TLogic "TLogic")
-pico_set_program_version(TLogic "0.1")
+pico_set_program_name(TLMGame "TLMGame")
+pico_set_program_version(TLMGame "0.1")
 
 # Generate PIO header
-pico_generate_pio_header(TLogic ${CMAKE_CURRENT_LIST_DIR}/libraries/ws2812b.pio)
+pico_generate_pio_header(TLMGame ${CMAKE_CURRENT_LIST_DIR}/libraries/ws2812b.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(TLogic 0)
-pico_enable_stdio_usb(TLogic 1)
+pico_enable_stdio_uart(TLMGame 0)
+pico_enable_stdio_usb(TLMGame 1)
 
 # Add the standard library to the build
-target_link_libraries(TLogic
+target_link_libraries(TLMGame
         pico_stdlib hardware_pwm)
 
 # Add the standard include files to the build
-target_include_directories(TLogic PRIVATE
+target_include_directories(TLMGame PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(TLogic 
+target_link_libraries(TLMGame 
         hardware_pio
         hardware_clocks
         hardware_i2c
@@ -69,5 +69,5 @@ target_link_libraries(TLogic
         pico_rand
         )
 
-pico_add_extra_outputs(TLogic)
+pico_add_extra_outputs(TLMGame)
 
