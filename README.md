@@ -5,4 +5,5 @@ O Jogo é composto por dois modos:
 - TLMath: Já neste, o jogador tem de ficar muito atento à conta apresentada em cada rodada e devolver ao programa o resultado que pensa ser o correto. Dessa maneira, a cada fase que o jogador passa (cada conta que acerta), o jogo aumenta sua dificuldade, de modo que as contas podem conter números progressivamente maiores, gerando, por consequência, resultados maiores e mais complexos de serem encontrados. Cabe notar que, a cada fase, há apenas uma operação: soma, subtração, multiplicação ou divisão. Nunca há mais que uma operação por fase!
 
 Diagrama de blocos sobre as camadas:
+
 ![diagrama_camadas_soft](https://github.com/user-attachments/assets/8c9e5d98-8c71-4d03-a9b1-0e6a105a5400)
