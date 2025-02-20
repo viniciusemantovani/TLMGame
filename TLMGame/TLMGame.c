@@ -449,6 +449,8 @@ bool btnARepeatLogic(struct repeating_timer *t){
     static int count = 0;
     printf("entra %d\n", count);
     count++;
+
+    // Verifica se pressionou A com tempo de debounce:
     if(!gpio_get(BUTTON_A) && absolute_time_diff_us(click_time_A, get_absolute_time()) > 200000){
         click_time_A = get_absolute_time();
         cor_atual++;
@@ -486,6 +488,8 @@ bool verifyVictoryMath(){
  */
 bool btnARepeatMath(struct repeating_timer *t){
     static absolute_time_t click_time_A = 0;
+
+    // Verifica se pressionou A com tempo de debounce:
     if(!gpio_get(BUTTON_A) && absolute_time_diff_us(click_time_A, get_absolute_time()) > 200000){
         click_time_A = get_absolute_time();
         which_digit++;
@@ -504,6 +508,7 @@ bool btnARepeatMath(struct repeating_timer *t){
 bool btnBRepeatMath(struct repeating_timer *t){
     static absolute_time_t click_time_B = 0;
     
+    // Verifica se pressionou B com tempo de debounce:
     if(!gpio_get(BUTTON_B) && absolute_time_diff_us(click_time_B, get_absolute_time()) > 200000){
         click_time_B = get_absolute_time();
         if(which_digit > 0) which_digit--;
@@ -519,6 +524,7 @@ bool btnBRepeatLogic(struct repeating_timer *t){
     static absolute_time_t click_time_B = 0;
     static absolute_time_t click_time_JS = 0;
     
+    // Verifica se pressionou B com tempo de debounce:
     if(!gpio_get(BUTTON_B) && absolute_time_diff_us(click_time_B, get_absolute_time()) > 200000){
         click_time_B = get_absolute_time();
         acendeLed(posicao_atual, cor_atual);
@@ -535,6 +541,7 @@ bool btnBRepeatLogic(struct repeating_timer *t){
         }
     }
 
+    // Confere se apertou joystick (sw) com tempo de debounce, caso sim, verifica vitoria.:
     if(!gpio_get(22) && absolute_time_diff_us(click_time_JS, get_absolute_time()) > 200000){
         click_time_JS = get_absolute_time();
         new_fase = true;
@@ -1049,7 +1056,7 @@ void restartFromScratch(uint16_t *fase_atual, uint8_t *ssd, struct render_area f
     }
     sleep_ms(1000); 
 
-    // Reseta o mapa:
+    // Reseta a matriz de LEDs:
     for(uint8_t i = 0; i < 25; i++){
         npSetLED(i, 0, 0, 0);
     }
@@ -1074,7 +1081,7 @@ void restartFromScratch(uint16_t *fase_atual, uint8_t *ssd, struct render_area f
  */
 void apresentaVitoria(uint8_t *ssd, struct render_area frame_area){
     // Escreve mensagem de vitoria no display:
-    organizeStrings("   MUITO BEM    ", "    CORRETO     ", " CONTINUE ASSIM ", ssd, frame_area);
+    organizeStrings("   MUITO BEM!   ", "    CORRETO!    ", " CONTINUE ASSIM ", ssd, frame_area);
 
     // Toca som de vitória:
     if(com_som){
@@ -1175,7 +1182,7 @@ int main(){
 
     //-------------------------------------------------------------------------
 
-        // Inicializacao do display:
+        // Conclui Inicialização do display:
     
     i2cInitDisplay(I2C_SDA, I2C_SCL); // Inicialização do i2c e do display OLED
 
