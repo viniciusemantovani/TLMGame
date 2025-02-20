@@ -762,7 +762,7 @@ void inicioFase(uint16_t fase_atual, uint8_t *ssd, struct render_area frame_area
     sprintf(fase_str, "       %d        ", fase_atual);
 
     // Mensagem de jogo:
-    organizeStrings("   fase atual   ", "                ", fase_str, ssd, frame_area);
+    organizeStrings("   Fase atual:   ", "                ", fase_str, ssd, frame_area);
 
     //-------------------------------------------------------------------------
 
