@@ -447,7 +447,6 @@ uint8_t movCursor(uint8_t posicao_atual, uint8_t cor_atual, uint16_t x, uint16_t
 bool btnARepeatLogic(struct repeating_timer *t){
     static absolute_time_t click_time_A = 0;
     static int count = 0;
-    printf("entra %d\n", count);
     count++;
 
     // Verifica se pressionou A com tempo de debounce:
@@ -478,7 +477,6 @@ bool verifyVictoryLogic(){
  * @brief Verifica se o jogador venceu uma rodada de matemática.
  */
 bool verifyVictoryMath(){
-    printf("%d\n", 10000*alg[0] + 1000*alg[1] + 100*alg[2] + 10*alg[3] + alg[4]);
     if(10000*alg[0] + 1000*alg[1] + 100*alg[2] + 10*alg[3] + alg[4] == resultado_correto) return true;
     else return false;
 }
@@ -1044,7 +1042,8 @@ void restartFromScratch(uint16_t *fase_atual, uint8_t *ssd, struct render_area f
     // Escreve mensagem de derrota no display:
     char str_resultado[17];
     sprintf(str_resultado, "   Correto: %d  ", resultado_correto);
-    if(game = false) organizeStrings("RESPOSTA ERRADA ", str_resultado, "TENTE NOVAMENTE ", ssd, frame_area);
+    sleep_ms(10);
+    if(!game) organizeStrings("RESPOSTA ERRADA ", str_resultado, "TENTE NOVAMENTE ", ssd, frame_area);
     else organizeStrings("RESPOSTA ERRADA ", "                ", "TENTE NOVAMENTE ", ssd, frame_area);
 
     // Toca som de derrota:
